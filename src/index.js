@@ -19,11 +19,12 @@ app.use(
 
 app.use(
   session({
+    name: "MySession",
     secret: "keyboard cat",
     resave: true,
-    saveUninitialized: false,
-    cookie: { secure: false, maxAge: 60000 },
-    rolling: true,
+    saveUninitialized: false, // Default: true
+    cookie: { secure: false, maxAge: 60000, httpOnly: true },
+    rolling: false, // Default: false
   })
 );
 app.use(express.json());
@@ -32,12 +33,12 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send(`Hello World!`);
   console.log("Cookies: ", req.cookies["connect.sid"]);
   console.log("Session: ", req.session);
   console.log("Session ID: ", req.sessionID);
   req.session.views = req.session.views ? req.session.views + 1 : 1;
   console.log("Session views: ", req.session.views);
+  res.send(`Hello World!`);
 });
 
 const port = process.env.PORT || 5000;
