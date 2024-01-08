@@ -1,7 +1,11 @@
+const express = require("express");
+const geolib = require("geolib");
+const { client, ObjectId } = require("../../services/database.service");
+
 async function getEvents(req, res) {
   const lat = req.query["lat"];
   const lon = req.query["lon"];
-  let range = req.query["range"] ?? 100; //Km
+  let radius = req.query["radius"] ?? 100; //Km
 
   //Check if lat and lon are provided
   if ((lat && !lon) || (!lat && lon)) {
@@ -14,7 +18,7 @@ async function getEvents(req, res) {
     await client.connect();
 
     const database = client.db("Shop");
-    const collection = database.collection("Events");
+    const collection = database.collection("events");
 
     let result = await collection.find({}).toArray();
 
@@ -27,14 +31,14 @@ async function getEvents(req, res) {
 
       result = await Promise.all(
         result.map(async (event) => {
-          const c2 = database.collection("Locations");
+          const c2 = database.collection("locations");
           const r = await c2.find({ _id: event["venueId"] }).toArray();
           first = r[0];
           const eventLocation = first["location"];
           const distance = geolib.getDistance(userLocation, eventLocation);
           const distanceInKm = geolib.convertDistance(distance, "km");
           //console.log("DISTANCE => " + distanceInKm + " RANGE => " + range);
-          if (distanceInKm <= parseFloat(range)) return event;
+          if (distanceInKm <= parseFloat(radius)) return event;
         })
       );
     }
@@ -56,7 +60,7 @@ async function getEventById(req, res) {
     await client.connect();
 
     const database = client.db("Shop");
-    const collection = database.collection("Events");
+    const collection = database.collection("events");
 
     const result = await collection
       .find({ _id: new ObjectId(eventId) })
@@ -78,7 +82,7 @@ async function getTickes(req, res) {
     await client.connect();
 
     const database = client.db("Shop");
-    const collection = database.collection("Events");
+    const collection = database.collection("events");
 
     const result = await collection
       .find({ _id: new ObjectId(eventId) })
@@ -98,9 +102,9 @@ async function getTickes(req, res) {
 module.exports = function () {
   const router = express.Router();
 
-  router.get("/events", getEvents);
-  router.get("/events/:eventId", getEventById);
-  router.get('/events/:eventId/tickets"', getTickes);
+  router.get("/", getEvents);
+  router.get("/:eventId", getEventById);
+  router.get("/:eventId/tickets", getTickes);
 
   return router;
 };
