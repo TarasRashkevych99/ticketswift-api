@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { json } = require("express");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const client = new MongoClient(process.env.DATABASE_URL, {
@@ -6,4 +7,40 @@ const client = new MongoClient(process.env.DATABASE_URL, {
   useUnifiedTopology: true,
 });
 
-module.exports = { client, ObjectId };
+async function getDbLocations(quary = {}) {
+
+  await client.connect();
+  const database = client.db("Shop");
+  const collection = database.collection("locations");
+  const result = await collection.find(quary).toArray();
+
+  await client.close();
+
+  return result;
+}
+
+async function getDbEvents(quary = {}) {
+
+  await client.connect();
+  const database = client.db("Shop");
+  const collection = database.collection("events");
+  const result = await collection.find(quary).toArray();
+
+  await client.close();
+
+  return result;
+}
+
+async function getDbArtists(quary = {}) {
+
+  await client.connect();
+  const database = client.db("Shop");
+  const collection = database.collection("artists");
+  const result = await collection.find(quary).toArray();
+
+  await client.close();
+
+  return result;
+}
+
+module.exports = { client, ObjectId, getDbLocations, getDbEvents, getDbArtists};

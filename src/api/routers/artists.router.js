@@ -1,44 +1,26 @@
 const express = require("express");
 const geolib = require("geolib");
-const { client, ObjectId } = require("../../services/database.service");
+const { client, ObjectId, getDbArtists} = require("../../services/database.service");
 
 
 async function getArtists(req, res) {
   try {
-    await client.connect();
-
-    const database = client.db("Shop");
-    const collection = database.collection("artists");
-
-    const result = await collection.find({}).toArray();
+    const result = await getDbArtists();
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 }
 
 async function getArtistsById(req, res) {
   const eventId = req.params.eventId;
-  console.log(eventId);
-
   try {
-    await client.connect();
-
-    const database = client.db("Shop");
-    const collection = database.collection("artists");
-
-    const result = await collection
-      .find({ _id: new ObjectId(eventId) })
-      .toArray();
+    const result = await getDbArtists({ _id: new ObjectId(eventId) });
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 }
 

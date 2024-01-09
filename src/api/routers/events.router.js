@@ -1,6 +1,6 @@
 const express = require("express");
 const geolib = require("geolib");
-const { client, ObjectId } = require("../../services/database.service");
+const { client, ObjectId, getDbEvents} = require("../../services/database.service");
 
 async function getEvents(req, res) {
   const lat = req.query["lat"];
@@ -13,89 +13,56 @@ async function getEvents(req, res) {
       .status(400)
       .json({ error: "Both lat and lon parameters are required." });
   }
-  let v = 0;
+
   try {
-    await client.connect();
-
-    const database = client.db("Shop");
-    const collection = database.collection("events");
-
-    let result = await collection.find({}).toArray();
+    let result = await getDbEvents();
 
     if (lat && lon) {
-      //Filtra per posizione
+      //filter by position
       const userLocation = {
         latitude: parseFloat(lat),
         longitude: parseFloat(lon),
       };
 
-      result = await Promise.all(
-        result.map(async (event) => {
-          const c2 = database.collection("locations");
-          const r = await c2.find({ _id: event["venueId"] }).toArray();
-          first = r[0];
-          const eventLocation = first["location"];
-          const distance = geolib.getDistance(userLocation, eventLocation);
-          const distanceInKm = geolib.convertDistance(distance, "km");
-          //console.log("DISTANCE => " + distanceInKm + " RANGE => " + range);
-          if (distanceInKm <= parseFloat(radius)) return event;
-        })
-      );
+      result = result.filter((event) => {
+        const eventLocation = event["location"];
+        const distance = geolib.getDistance(userLocation, eventLocation);
+        const distanceInKm = geolib.convertDistance(distance, "km");
+        console.log("DISTANCE => " + distanceInKm + " RANGE => " + radius);
+        return distanceInKm <= parseFloat(radius);
+      });
+
     }
-    result = result.filter((event) => event !== undefined);
+
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 }
 
 async function getEventById(req, res) {
   const eventId = req.params.eventId;
-  console.log(eventId);
 
   try {
-    await client.connect();
-
-    const database = client.db("Shop");
-    const collection = database.collection("events");
-
-    const result = await collection
-      .find({ _id: new ObjectId(eventId) })
-      .toArray();
+    const result = await getDbEvents({ _id: new ObjectId(eventId) });
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 }
 
 async function getTickes(req, res) {
   const eventId = req.params.eventId;
-  console.log(eventId);
 
   try {
-    await client.connect();
-
-    const database = client.db("Shop");
-    const collection = database.collection("events");
-
-    const result = await collection
-      .find({ _id: new ObjectId(eventId) })
-      .toArray();
+    const result = await getDbEvents({ _id: new ObjectId(eventId) });
     let first = result[0];
-    //console.log(first['tickets']);
-
     res.status(200).json(first["tickets"]);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
-  } finally {
-    await client.close();
   }
 }
 
