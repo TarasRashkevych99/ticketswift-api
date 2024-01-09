@@ -6,7 +6,7 @@ const { parseEvents, parseParams } = require("./src/services/ticketmaster.servic
 KEY = "znz4DMFouSRplIg0cgL6LU3jI5sshoqI";
 
 // Price's scraping
-async function getEventPrice(link){
+async function getEventPrice(link) {
   //scrape
   let tickets = {
     "list": []
@@ -36,9 +36,10 @@ async function getEventPrice(link){
   });
 }
 
+
 function getEvents(params = {}) {
   const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${KEY}&${parseParams(params)}`;
-  
+  console.log(url);
   return fetch(url)
     .then(response => {
       if (!response.ok) {
@@ -53,6 +54,4 @@ function getEvents(params = {}) {
     });
 }
 
-getEvents({ keyword:"bulls", size:"20"}).then(data => {
-  console.log(data);
-});
+module.exports = {getEvents};

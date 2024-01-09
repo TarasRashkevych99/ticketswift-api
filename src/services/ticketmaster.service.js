@@ -23,7 +23,7 @@ function parseEvents(data){
                 var endSaleTime = "TBA";
             }
             var startEventTime = event['dates']['start']['dateTime'];
-            var status = event['dates']['status']['code'];
+            //var status = event['dates']['status']['code'];
     
             //get classifications
             var classifications = event['classifications'];
@@ -45,12 +45,9 @@ function parseEvents(data){
             var evento = {
                 "id": id,
                 "url": url,
-                "sale": {
-                    "start": startSaleTime,
-                    "end": endSaleTime,
-                    "status": status
-                },
-                "event_start": startEventTime,
+                "saleStart": startSaleTime,
+                "saleEnd": endSaleTime,
+                "date": startEventTime,
                 "genre": genre,
                 "subgenre": subgenere,
                 "location":{
