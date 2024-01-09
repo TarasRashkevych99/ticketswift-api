@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const middlewares = require("./middlewares");
+const geolib = require("geolib");
+const r = require("./api/router");
 
 const app = express();
 
@@ -17,4 +19,5 @@ app.get("/", (req, res) => {
 
 const port = process.env.PORT || 5000;
 
+app.use("/api", r());
 app.listen(port, () => console.log(`Listening on port ${port}`));
