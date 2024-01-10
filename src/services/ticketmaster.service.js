@@ -1,7 +1,7 @@
 
 
 function parseEvents(data){
-    var result = [];
+    let result = [];
     
     data = data['_embedded'];
     if(!data)
@@ -9,41 +9,42 @@ function parseEvents(data){
   
     data['events'].forEach(event => {
         if(event['_embedded']){
-            var id = event['id'];
-            //var type = event['type'];
-            var url = event['url'];
-    
-            //var sales = event['sales'];
-            //check for TBA
+            let id = event['id'];
+            let url = event['url'];
+            let name = event['name'];
+
+            let startSaleTime
+            let endSaleTime
             try{
-                var startSaleTime = event['sales']['public']['startDateTime'];
-                var endSaleTime = event['sales']['public']['endDateTime'];
+                startSaleTime = event['sales']['public']['startDateTime'];
+                endSaleTime = event['sales']['public']['endDateTime'];
             }catch(error){
-                var startSaleTime = "TBA";
-                var endSaleTime = "TBA";
+                startSaleTime = "TBA";
+                endSaleTime = "TBA";
             }
-            var startEventTime = event['dates']['start']['dateTime'];
+            let startEventTime = event['dates']['start']['dateTime'];
             //var status = event['dates']['status']['code'];
     
             //get classifications
-            var classifications = event['classifications'];
-            var genre = classifications[0]?.['segment']?.['name'] ?? undefined;
-            var subgenere = [classifications[0]?.['genre']?.['name'] ?? undefined]
+            let classifications = event['classifications'];
+            let genre = classifications[0]?.['segment']?.['name'] ?? undefined;
+            let subgenere = [classifications[0]?.['genre']?.['name'] ?? undefined]
             
             //get location
             location = event['_embedded']['venues'][0];
             
-            var lid = location['id'];
-            var lname = location['name'];
-            var postalCode = location['postalCode'];
-            var city = location['city']?.['name'] ?? undefined;
-            var state = location['state']?.['name'] ?? undefined;
-            var country = location['country']?.['name'] ?? undefined;
-            var address = location['address']?.['name'] ?? undefined;
-            var pos = location['location'];
+            let lid = location['id'];
+            let lname = location['name'];
+            let postalCode = location['postalCode'];
+            let city = location['city']?.['name'] ?? undefined;
+            let state = location['state']?.['name'] ?? undefined;
+            let country = location['country']?.['name'] ?? undefined;
+            let address = location['address']?.['name'] ?? undefined;
+            let pos = location['location'];
     
-            var evento = {
+            let evento = {
                 "id": id,
+                "name": name,
                 "url": url,
                 "saleStart": startSaleTime,
                 "saleEnd": endSaleTime,
@@ -70,6 +71,26 @@ function parseEvents(data){
     return result;
 }
 
+function parseGenre(data){
+    //console.log(data['_embedded']?.classifications[0]?.segment?.id);
+    return data['_embedded']?.classifications[0]?.segment?.id ?? undefined;
+}
+
+function parseSubgenre(data, target){
+    //console.log(data['_embedded']?.classifications[0]?.segment?._embedded?.genres);
+    try {
+        let d = data['_embedded']?.classifications[0]?.segment?._embedded?.genres;
+        //console.log(d);
+        d = d.filter((item) => {
+            //console.log(item?.name);
+            return (item?.name).toLowerCase() == target.toLowerCase();
+        });
+        return d[0]?.id ?? undefined;
+    } catch (error) {
+        return undefined;
+    }
+}
+
 function parseParams(params) {
     const query = Object.entries(params)
       .map(([key, value]) => (value !== undefined ? `${key}=${encodeURIComponent(value)}` : null))
@@ -79,4 +100,4 @@ function parseParams(params) {
     return query;
   }
 
-module.exports = { parseEvents, parseParams };
+module.exports = { parseEvents, parseParams, parseGenre, parseSubgenre };
