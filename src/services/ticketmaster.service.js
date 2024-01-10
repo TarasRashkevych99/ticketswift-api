@@ -1,4 +1,8 @@
+const ngeohash = require('ngeohash');
+const axios = require('axios');
+const cheerio = require('cheerio');
 
+KEY = "znz4DMFouSRplIg0cgL6LU3jI5sshoqI";
 
 function parseEvents(data){
     let result = [];
@@ -91,13 +95,62 @@ function parseSubgenre(data, target){
     }
 }
 
+function getEvents(params = {}) {
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${KEY}&${parseParams(params)}`;
+    console.log(url);
+    return fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Errore nella richiesta: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => parseEvents(data))
+      .catch(error => {
+        console.error('Errore durante la chiamata API:', error.message);
+        throw error;
+      });
+  }
+  
+function getGenres(genre){
+    const url = "https://app.ticketmaster.com/discovery/v2/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + genre + "&locale=*";
+    console.log(url);
+    return fetch(url)
+        .then(response => {
+        if (!response.ok) {
+            throw new Error(`Errore nella richiesta: ${response.status}`);
+        }
+        return response.json();
+        })
+        .then(data => parseGenre(data))
+        .catch(error => {
+        console.error('Errore durante la chiamata API:', error.message);
+        throw error;
+        }); 
+}
+  
+function getSubgenres(subgenre){
+    const url = "https://app.ticketmaster.com/discovery/v2/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + subgenre + "&locale=*";
+    console.log(url);
+    return fetch(url)
+        .then(response => {
+        if (!response.ok) {
+            throw new Error(`Errore nella richiesta: ${response.status}`);
+        }
+        return response.json();
+        })
+        .then(data => parseSubgenre(data, subgenre))
+        .catch(error => {
+        console.error('Errore durante la chiamata API:', error.message);
+        throw error;
+        }); 
+}
+
 function parseParams(params) {
     const query = Object.entries(params)
       .map(([key, value]) => (value !== undefined ? `${key}=${encodeURIComponent(value)}` : null))
-      .filter(Boolean)
       .join('&');
-  
     return query;
-  }
+}
 
-module.exports = { parseEvents, parseParams, parseGenre, parseSubgenre };
+module.exports = {getEvents, getGenres, getSubgenres, parseParams};
