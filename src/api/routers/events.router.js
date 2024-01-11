@@ -3,14 +3,14 @@ const geolib = require("geolib");
 const { client, ObjectId, getDbEvents, getDbEvent} = require("../../services/database.service");
 
 async function getEvents(req, res) {
-  const lat = req.query["lat"];
-  const lon = req.query["lon"];
-  let radius = req.query["radius"] ?? 100; //Km
-  let country = req.query["country"];
+  const lat = req.query["lat"]; //number range
+  const lon = req.query["lon"]; 
+  let radius = req.query["radius"] ?? 100; //number pos
+  //let country = req.query["country"];
   let keyword = req.query["keyword"];
   let genre = req.query["genre"];
-  let subgenere = req.query["subgenre"];
-  let from = req.query["from"];
+  let subgenere = req.query["subgenre"]; //tipo
+  let from = req.query["from"]; //data valida
   let to = req.query["to"];
 
   //Check if lat and lon are provided
@@ -29,7 +29,6 @@ async function getEvents(req, res) {
   console.log(query);
   try {
     let result = await getDbEvents(query);
-
 
     if (lat && lon) {
       //filter by position

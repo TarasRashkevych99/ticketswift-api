@@ -7,7 +7,12 @@ KEY = "znz4DMFouSRplIg0cgL6LU3jI5sshoqI";
 function parseEvents(data){
     let result = [];
     
+    if(!data['_embedded']){
+        throw new Error("no Ticketmaster events");
+    }
+
     data = data['_embedded'];
+
     if(!data)
       return undefined;
   
@@ -100,8 +105,9 @@ function parseSubgenre(data, target){
     }
 }
 
-function getEvents(params = {}) {
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${KEY}&${parseParams(params)}`;
+async function getEvents(params = {}) {
+    const eventRequestData = await paramsAdapter(params);
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${KEY}&${parseParams(eventRequestData)}`;
     console.log(url);
     return fetch(url)
       .then(response => {
@@ -133,7 +139,7 @@ function getGenres(genre){
         throw error;
         }); 
 }
-  
+
 function getSubgenres(subgenre){
     const url = "https://app.ticketmaster.com/discovery/v2/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + subgenre + "&locale=*";
     console.log(url);
@@ -156,6 +162,20 @@ function parseParams(params) {
       .map(([key, value]) => (value !== undefined ? `${key}=${encodeURIComponent(value)}` : null))
       .join('&');
     return query;
+}
+
+async function paramsAdapter(params){
+    let newParams = {
+        ...(params['lon'] && params['lat']) && {"locale=*&geoPoint": ngeohash.encode(params['lat'], params['lon'])},
+        ...params['radius'] && {"radius":params['radius']},
+        ...params['keyword'] && {"keyword":params['keyword']},
+        ...params['genre'] && {"segmentId": await getGenres(params['genre'])},
+        ...params['subgenre'] && {"genreId": await getSubgenres(params['subgenre'])},
+        ...params['id'] && {"id":params['id'] },
+        ...(params['from'] && params['to']) && {"startDateTime": params['from'], "endDateTime": params['to']},
+    }
+    console.log(newParams);
+    return newParams;
 }
 
 module.exports = {getEvents, getGenres, getSubgenres, parseParams};

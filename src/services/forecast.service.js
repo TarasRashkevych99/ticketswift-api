@@ -38,9 +38,9 @@ function weatherCondition(code){
       }
 }
 
-function isDateWithin16Days(inputDate) {
-    let dif = Math.ceil((new Date(inputDate) - new Date()) / (1000 * 3600 * 24));
-    return dif < 16 && dif >= 0;
+function isDateWithinDays(inputDate, n) {
+    let dif = (new Date(inputDate).getDate() - new Date().getDate());
+    return dif < n && dif >= 0;
 }
 
 function parseResponse(response, date){
@@ -71,7 +71,7 @@ function parseResponse(response, date){
 }
 
 async function getWeather(params){
-    if(!isDateWithin16Days(params.date) || !params.date || !params.lat || !params.lon){
+    if(!isDateWithinDays(params.date, 16) || !params.date || !params.lat || !params.lon){
         return;
     }
     // if forecast aviable
