@@ -9,7 +9,9 @@ async function getEvents(req, res) {
   let country = req.query["country"];
   let keyword = req.query["keyword"];
   let genre = req.query["genre"];
-  let subgenere = req.query["subgenre"]; 
+  let subgenere = req.query["subgenre"];
+  let from = req.query["from"];
+  let to = req.query["to"];
 
   //Check if lat and lon are provided
   if ((lat && !lon) || (!lat && lon)) {
@@ -22,6 +24,7 @@ async function getEvents(req, res) {
     ...keyword && {"name": { $regex: new RegExp(keyword, "i")}},
     ...genre && {"genre": { $regex: new RegExp(genre, "i")}},
     ...subgenere && {"subgenere": { $regex: new RegExp(subgenere, "i")}},
+    ...(from && to) && {"date": { $gte: new Date(from), $lte: new Date(to)}},
   } 
   console.log(query);
   try {

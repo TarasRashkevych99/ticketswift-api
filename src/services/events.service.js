@@ -42,19 +42,9 @@ async function getAllEvents(params = {}){
 
 async function getEventById(params){
     try {
-        // const external = await getEvents(await paramsAdapter(params));
-
-        // const local = await fetchById(params.id);
-
-        //Questo metodo fa cagagare 
-        return  await getEvents(await paramsAdapter(params)) ?? await fetchById(params.id);  
-        
-        // return Promise.any([getEvents(await paramsAdapter(params)), fetchById(params.id)])
-        // .then(value => {
-        //     return value
-        // }).catch(error => {
-        //     throw error;
-        // });
+        //return await fetchById(params.id) ?? await getEvents(await paramsAdapter(params));
+        //Se invertite generano problemi (bisogna modificare)
+        return await getEvents(await paramsAdapter(params)) ?? await fetchById(params.id);
     } catch (error) {
         throw error;
     }
@@ -68,18 +58,19 @@ async function paramsAdapter(params){
         ...params['genre'] && {"segmentId": await getGenres(params['genre'])},
         ...params['subgenre'] && {"genreId": await getSubgenres(params['subgenre'])},
         ...params['id'] && {"id":params['id'] },
+        ...(params['from'] && params['to']) && {"startDateTime": params['from'], "endDateTime": params['to']},
     }
-    //console.log(newParams);
+    console.log(newParams);
     return newParams;
 }
 
-// getAllEvents({lat: 45, lon:12, radius:500, genre:'music', subgenre:'rock', city:'Venice'}).then(result => {
+// getAllEvents({lat: 45, lon:12, radius:500, genre:'music', subgenre:'rock', city:'Venice', from:'2024-01-24T13:33:00Z', to:'2024-03-24T13:33:00Z'}).then(result => {
 //     console.log(result);
 // });
 
-getEventById({id:"6598050d26ea8961d656ef21"}).then(result => {
-    console.log(result);
-});
+// getEventById({id:"6598050d26ea8961d656ef21"}).then(result => {
+//     console.log(result);
+// });
 
 // getEventById({id:"vvG1fZ9sdJAAly"}).then(result => {
 //     console.log(result);
