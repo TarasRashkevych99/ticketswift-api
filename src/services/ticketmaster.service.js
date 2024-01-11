@@ -17,8 +17,12 @@ function parseEvents(data){
             let url = event['url'];
             let name = event['name'];
 
-            let startSaleTime
-            let endSaleTime
+            let image = event['images'].find(image => {
+                return image.width > 1000 && image.height > 500;
+            });
+
+            let startSaleTime;
+            let endSaleTime;
             try{
                 startSaleTime = event['sales']['public']['startDateTime'];
                 endSaleTime = event['sales']['public']['endDateTime'];
@@ -50,6 +54,7 @@ function parseEvents(data){
                 "id": id,
                 "name": name,
                 "url": url,
+                "image": image.url,
                 "saleStart": startSaleTime,
                 "saleEnd": endSaleTime,
                 "date": startEventTime,

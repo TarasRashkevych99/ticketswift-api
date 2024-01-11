@@ -64,9 +64,9 @@ async function paramsAdapter(params){
     return newParams;
 }
 
-// getAllEvents({lat: 45, lon:12, radius:500, genre:'music', subgenre:'rock', city:'Venice', from:'2024-01-24T13:33:00Z', to:'2024-03-24T13:33:00Z'}).then(result => {
-//     console.log(result);
-// });
+getAllEvents({lat: 45, lon:12, radius:500, genre:'music', subgenre:'rock', city:'Venice', from:'2024-01-24T13:33:00Z', to:'2024-03-24T13:33:00Z'}).then(result => {
+    console.log(result);
+});
 
 // getEventById({id:"6598050d26ea8961d656ef21"}).then(result => {
 //     console.log(result);

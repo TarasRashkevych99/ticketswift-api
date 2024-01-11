@@ -74,7 +74,7 @@ async function getWeather(params){
     if(!isDateWithin16Days(params.date) || !params.date || !params.lat || !params.lon){
         return;
     }
-    //forecast aviable
+    // if forecast aviable
     const lat = params.lat;
     const lon = params.lon;
     try {
@@ -90,6 +90,6 @@ async function getWeather(params){
     
 }
 
-getWeather({date: '2024-01-27', lat:46.1228, lon:12.2051}).then(result => {
+getWeather({date: '2024-01-26', lat:46.1228, lon:12.2051}).then(result => {
     console.log(result);
 });
