@@ -1,8 +1,15 @@
 const express = require("express");
 const geolib = require("geolib");
 const { client, ObjectId, getDbEvents, getDbEvent} = require("../../services/database.service");
+const validationService = require("../../services/validation.service");
 
 async function getEvents(req, res) {
+  //check using zod
+  let validation = validationService.paramsSchema.safeParse(req.query)
+  if(!validation.success)
+    return res.status(400).send(validation.error);
+ 
+
   const lat = req.query["lat"]; //number range
   const lon = req.query["lon"]; 
   let radius = req.query["radius"] ?? 100; //number pos

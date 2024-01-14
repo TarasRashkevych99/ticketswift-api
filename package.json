@@ -19,6 +19,7 @@
     "express-session": "^1.17.3",
     "geolib": "^3.3.4",
     "mongodb": "^4.17.2",
-    "ngeohash": "^0.6.3"
+    "ngeohash": "^0.6.3",
+    "zod": "^3.22.4"
   }
 }
