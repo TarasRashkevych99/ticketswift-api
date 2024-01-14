@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { json } = require("express");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const client = new MongoClient(process.env.DATABASE_URL, {
@@ -86,4 +85,4 @@ async function getDbArtists(quary = {}) {
   return result;
 }
 
-module.exports = { client, ObjectId, getDbLocations, getDbEvents, getDbEvent, getDbArtists};
+module.exports = { getDbLocations, getDbEvents, getDbEvent, getDbArtists };

@@ -1,6 +1,6 @@
 const express = require("express");
 const geolib = require("geolib");
-const { client, ObjectId, getDbEvents, getDbEvent} = require("../../services/database.service");
+const { getDbEvents, getDbEvent} = require("../../services/database.service");
 const validationService = require("../../services/validation.service");
 
 async function getEvents(req, res) {

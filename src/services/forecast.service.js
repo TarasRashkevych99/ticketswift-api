@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const weatherMap = {
     0: 'Clear sky',
     1: 'Mainly clear',
@@ -78,7 +80,7 @@ async function getWeather(params){
     const lat = params.lat;
     const lon = params.lon;
     try {
-        const url  = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&daily=" +
+        const url  = process.env.FORECAST_URL + "?latitude=" + lat + "&longitude=" + lon + "&daily=" +
                     "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=16";
         console.log(url);
         const response = await fetch(url);

@@ -1,8 +1,9 @@
+require("dotenv").config();
 const ngeohash = require('ngeohash');
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-KEY = "znz4DMFouSRplIg0cgL6LU3jI5sshoqI";
+KEY = process.env.TICKETMASTER_KEY;
 
 function parseEvents(data){
     let result = [];
@@ -107,7 +108,7 @@ function parseSubgenre(data, target){
 
 async function getEvents(params = {}) {
     const eventRequestData = await paramsAdapter(params);
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${KEY}&${parseParams(eventRequestData)}`;
+    const url = process.env.TICKETMASTER_URL + `/events.json?apikey=${KEY}&${parseParams(eventRequestData)}`;
     console.log(url);
     return fetch(url)
       .then(response => {
@@ -124,7 +125,7 @@ async function getEvents(params = {}) {
   }
   
 function getGenres(genre){
-    const url = "https://app.ticketmaster.com/discovery/v2/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + genre + "&locale=*";
+    const url = process.env.TICKETMASTER_URL + "/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + genre + "&locale=*";
     console.log(url);
     return fetch(url)
         .then(response => {
@@ -141,7 +142,7 @@ function getGenres(genre){
 }
 
 function getSubgenres(subgenre){
-    const url = "https://app.ticketmaster.com/discovery/v2/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + subgenre + "&locale=*";
+    const url = process.env.TICKETMASTER_URL + "/classifications?apikey=znz4DMFouSRplIg0cgL6LU3jI5sshoqI&keyword=" + subgenre + "&locale=*";
     console.log(url);
     return fetch(url)
         .then(response => {
@@ -178,4 +179,4 @@ async function paramsAdapter(params){
     return newParams;
 }
 
-module.exports = {getEvents, getGenres, getSubgenres, parseParams};
+module.exports = { getEvents, parseParams };
