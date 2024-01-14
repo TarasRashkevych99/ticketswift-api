@@ -4,20 +4,18 @@ const { client, ObjectId, getDbEvents, getDbEvent} = require("../../services/dat
 const validationService = require("../../services/validation.service");
 
 async function getEvents(req, res) {
-  //check using zod
+  //Zod input validation
   let validation = validationService.paramsSchema.safeParse(req.query)
   if(!validation.success)
     return res.status(400).send(validation.error);
- 
 
-  const lat = req.query["lat"]; //number range
+  const lat = req.query["lat"]; 
   const lon = req.query["lon"]; 
-  let radius = req.query["radius"] ?? 100; //number pos
-  //let country = req.query["country"];
+  let radius = req.query["radius"] ?? 100; 
   let keyword = req.query["keyword"];
   let genre = req.query["genre"];
-  let subgenere = req.query["subgenre"]; //tipo
-  let from = req.query["from"]; //data valida
+  let subgenere = req.query["subgenre"]; 
+  let from = req.query["from"]; 
   let to = req.query["to"];
 
   //Check if lat and lon are provided
@@ -62,10 +60,15 @@ async function getEvents(req, res) {
 }
 
 async function getEventById(req, res) {
+  //Zod input validation
+  let validation = validationService.idSchema.safeParse(req.params.eventId)
+  if(!validation.success)
+    return res.status(400).send(validation.error);
+  
   const eventId = req.params.eventId;
-
+  
   try {
-    const result = await getDbEvent({ _id: new ObjectId(eventId) });
+    const result = await getDbEvent({ _id: eventId });
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);
@@ -74,10 +77,15 @@ async function getEventById(req, res) {
 }
 
 async function getTickes(req, res) {
-  const eventId = req.params.eventId;
+  //Zod input validation
+  let validation = validationService.idSchema.safeParse(req.params.eventId)
+  if(!validation.success)
+    return res.status(400).send(validation.error);
 
+  const eventId = req.params.eventId;
+  
   try {
-    const result = await getDbEvents({ _id: new ObjectId(eventId) });
+    const result = await getDbEvents({ _id: eventId });
     let first = result[0];
     res.status(200).json(first["tickets"]);
   } catch (error) {

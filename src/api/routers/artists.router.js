@@ -1,7 +1,7 @@
 const express = require("express");
 const geolib = require("geolib");
 const { client, ObjectId, getDbArtists} = require("../../services/database.service");
-
+const validationService = require("../../services/validation.service");
 
 async function getArtists(req, res) {
   try {
@@ -14,9 +14,15 @@ async function getArtists(req, res) {
 }
 
 async function getArtistsById(req, res) {
+  //Zod input validation
+  let validation = validationService.idSchema.safeParse(req.params.eventId)
+  if(!validation.success)
+    return res.status(400).send(validation.error);
+  
   const eventId = req.params.eventId;
+
   try {
-    const result = await getDbArtists({ _id: new ObjectId(eventId) });
+    const result = await getDbArtists({ _id: eventId });
     res.status(200).json(result);
   } catch (error) {
     console.error("Error:", error);

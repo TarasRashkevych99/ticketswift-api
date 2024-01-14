@@ -8,6 +8,9 @@ const client = new MongoClient(process.env.DATABASE_URL, {
 });
 
 async function getDbLocations(quary = {}) {
+  if(quary._id){
+    quary._id = new ObjectId(quary._id);
+  }
 
   await client.connect();
   const database = client.db("Shop");
@@ -20,6 +23,9 @@ async function getDbLocations(quary = {}) {
 }
 
 async function getDbEvents(quary = {}) {
+  if(quary._id){
+    quary._id = new ObjectId(quary._id);
+  }
 
   await client.connect();
   const database = client.db("Shop");
@@ -32,6 +38,10 @@ async function getDbEvents(quary = {}) {
 }
 
 async function getDbEvent(quary = {}) {
+  if(quary._id){
+    quary._id = new ObjectId(quary._id);
+  }
+
   await client.connect();
   const database = client.db("Shop");
   const collection = database.collection("events");
@@ -62,6 +72,9 @@ async function getDbEvent(quary = {}) {
 }
 
 async function getDbArtists(quary = {}) {
+  if(quary._id){
+    quary._id = new ObjectId(quary._id);
+  }
 
   await client.connect();
   const database = client.db("Shop");
