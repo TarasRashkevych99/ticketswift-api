@@ -23,7 +23,7 @@ function verifyToken(token) {
         });
         return userInfo;
     } catch (error) {
-        throw new Error('Invalid token');
+        return null;
     }
 }
 

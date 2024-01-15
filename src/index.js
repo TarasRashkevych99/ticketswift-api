@@ -4,17 +4,7 @@ const middlewares = require('./middlewares');
 const getApisRouter = require('./api/router');
 const context = require('./services/context.service');
 
-process.on('SIGINT', () => {
-    console.log('Killing the server');
-    context.closeConnection();
-    console.log('Connection closed');
-    server.close();
-    process.exit();
-});
-
 const app = express();
-
-context.connect();
 
 middlewares(app);
 
@@ -27,7 +17,19 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
+app.use('/api', getApisRouter());
+
 const port = process.env.PORT || 5000;
 
-app.use('/api', getApisRouter());
-app.listen(port, () => console.log(`Listening on port ${port}`));
+const server = app.listen(port, async () => {
+    await context.connect();
+    console.log(`Listening on port ${port}`);
+});
+
+process.on('SIGINT', () => {
+    console.log('Killing the server');
+    context.closeConnection();
+    console.log('Connection closed');
+    server.close();
+    process.exit();
+});

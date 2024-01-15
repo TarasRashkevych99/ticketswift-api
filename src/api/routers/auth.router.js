@@ -47,7 +47,7 @@ async function signup(req, res) {
 
     const userInfo = await usersService.createUser(req.body);
     const token = tokenService.generateToken(userInfo);
-    res.cookie('token', token, { httpOnly: true });
+    res.cookie('token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 });
     req.session.user = userInfo;
     res.status(201).send(userInfo);
 }

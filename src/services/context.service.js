@@ -8,6 +8,8 @@ async function connect() {
         useUnifiedTopology: true,
     }).connect();
 
+    console.log('Connected to the database');
+
     return connection;
 }
 
@@ -21,6 +23,7 @@ function getConnection() {
 function closeConnection() {
     connection?.close();
     connection = null;
+    console.log('Connection closed');
 }
 
 function getCollection(collection) {
