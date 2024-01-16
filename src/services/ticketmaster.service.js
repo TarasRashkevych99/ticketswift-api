@@ -2,6 +2,7 @@ require("dotenv").config();
 const ngeohash = require('ngeohash');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { v4: uuidv4 } = require('uuid');
 
 KEY = process.env.TICKETMASTER_KEY;
 
@@ -55,12 +56,31 @@ function parseEvents(data){
             let country = location['country']?.['name'] ?? undefined;
             let address = location['address']?.['name'] ?? undefined;
             let pos = location['location'];
-    
+            
+            //TIcket generation
+            let tickets = [];
+            standardPrice = Math.floor(Math.random()*125 + 25)
+            tickets.push({
+                name: "Standard Ticket",
+                availability: 50,
+                price: standardPrice,
+                id: uuidv4()
+            });
+            if(Math.floor(Math.random()*3) == 2){
+                tickets.push({
+                    name: "Premium Ticket",
+                    availability: 50,
+                    price: Math.floor(Math.random()*125 + standardPrice),
+                    id: uuidv4()
+                });
+            }
+
             let evento = {
                 "id": id,
                 "name": name,
                 "url": url,
                 "image": image.url,
+                "tickets": tickets,
                 "saleStart": startSaleTime,
                 "saleEnd": endSaleTime,
                 "date": startEventTime,
