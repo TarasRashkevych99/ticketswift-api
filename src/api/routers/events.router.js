@@ -43,7 +43,7 @@ async function getEvents(req, res) {
       };
 
       result = result.filter((event) => {
-        const eventLocation = event["location"];
+        const eventLocation = event["coordinates"];
         const distance = geolib.getDistance(userLocation, eventLocation);
         const distanceInKm = geolib.convertDistance(distance, "km");
         console.log("DISTANCE => " + distanceInKm + " RANGE => " + radius);
