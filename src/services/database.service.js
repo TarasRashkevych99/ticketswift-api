@@ -2,10 +2,7 @@ require('dotenv').config();
 const { json } = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 
-const client = new MongoClient(process.env.CONNECTION_STRING, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+const client = new MongoClient(process.env.CONNECTION_STRING);
 
 async function getDbLocations(quary = {}) {
     await client.connect();
@@ -52,7 +49,7 @@ async function createUser(user) {
 }
 
 module.exports = {
-    client,
+    // client,
     ObjectId,
     getDbLocations,
     getDbEvents,

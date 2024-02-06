@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
     console.log('Cookies: ', req.cookies['ticketswift']);
     console.log('Session: ', req.session);
     console.log('Session ID: ', req.sessionID);
-    req.session.views = req.session.views ? req.session.views + 1 : 1;
+    // req.session.views = req.session.views ? req.session.views + 1 : 1;
     console.log('Session views: ', req.session.views);
     res.send('Hello World!');
 });
@@ -27,9 +27,8 @@ const server = app.listen(port, async () => {
 });
 
 process.on('SIGINT', () => {
-    console.log('Killing the server');
     context.closeConnection();
-    console.log('Connection closed');
+    console.log('Shutting down the server');
     server.close();
     process.exit();
 });

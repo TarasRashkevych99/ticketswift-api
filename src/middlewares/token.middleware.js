@@ -1,4 +1,4 @@
-const tokenService = require('../services/token.service');
+const tokensService = require('../services/tokens.service');
 const usersService = require('../services/users.service');
 
 function token(req, res, next) {
@@ -10,14 +10,14 @@ function token(req, res, next) {
     const token = req.cookies['token'];
 
     if (!token) {
-        res.status(401).send('No token provided');
+        res.status(401).send({ error: 'No token provided' });
         return;
     }
 
-    const userInfo = tokenService.verifyToken(token);
+    const userInfo = tokensService.verifyToken(token);
 
     if (!userInfo) {
-        res.status(401).send('Invalid token');
+        res.status(401).send({ error: 'Invalid token' });
         return;
     }
 
@@ -25,17 +25,17 @@ function token(req, res, next) {
     const user = usersService.getUserById(userId);
 
     if (!user) {
-        res.status(401).send('Invalid token');
+        res.status(401).send({ error: 'Invalid token' });
         return;
     }
 
     if (!req.session.user) {
-        res.status(401).send('No active session');
+        res.status(401).send({ error: 'No active session' });
         return;
     }
 
     if (req.session.user.id !== userInfo.id) {
-        res.status(401).send('Invalid token');
+        res.status(401).send({ error: 'Invalid token' });
         return;
     }
 

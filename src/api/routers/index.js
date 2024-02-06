@@ -10,7 +10,7 @@ module.exports = () => {
     const router = express.Router();
     router.use('/auth', getAuthRouter());
     router.use(token);
-    //router.use("/users", getUserRouter());
+    router.use('/users', getUserRouter());
     router.use('/events', getEventsRouter());
     router.use('/locations', getLocationsRouter());
     router.use('/artists', getArtistsRouter());

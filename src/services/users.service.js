@@ -8,12 +8,14 @@ async function getUserById(userId) {
         .findOne({ _id: new ObjectId(userId) });
 }
 
-async function createUser(userInfo) {
-    const alreadyInsertedUsername = await context
-        .getCollection('users')
-        .findOne({ username: userInfo.username });
+async function getUserByEmail(email) {
+    return await context.getCollection('users').findOne({ email: email });
+}
 
-    if (alreadyInsertedUsername) {
+async function createUser(userInfo) {
+    const userWithEmail = await getUserByEmail(userInfo.email);
+
+    if (userWithEmail) {
         return null;
     }
 
@@ -23,7 +25,7 @@ async function createUser(userInfo) {
         await context.getCollection('users').insertOne({
             createdOn: new Date(),
             modifedOn: new Date(),
-            username: userInfo.username,
+            email: userInfo.email,
             password: hashedPassword,
         })
     ).insertedId;
@@ -35,9 +37,22 @@ async function createUser(userInfo) {
     }
 
     return {
-        username: user.username,
+        email: user.email,
         id: user._id.toString(),
     };
 }
 
-module.exports = { getUserById, createUser };
+async function getAuthenticatedUser(userToLogin) {
+    const user = await getUserByEmail(userToLogin.email);
+    if (!user || !(await bcrypt.compare(userToLogin.password, user.password))) {
+        return null;
+    }
+    return { email: user.email, id: user._id.toString() };
+}
+
+module.exports = {
+    getUserById,
+    getUserByEmail,
+    createUser,
+    getAuthenticatedUser,
+};

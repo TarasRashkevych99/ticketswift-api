@@ -6,10 +6,6 @@ const cors = require('cors');
 const corsConfig = {
     origin: process.env.FRONTEND_URL,
     optionsSuccessStatus: 200,
-    headers: {
-        'Access-Control-Allow-Origin': process.env.FRONTEND_URL,
-        'Access-Control-Allow-Credentials': true,
-    },
     credentials: true,
 };
 

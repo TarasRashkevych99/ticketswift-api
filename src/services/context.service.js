@@ -3,11 +3,7 @@ const { MongoClient } = require('mongodb');
 let connection = null;
 
 async function connect() {
-    connection = await new MongoClient(process.env.CONNECTION_STRING, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    }).connect();
-
+    connection = await new MongoClient(process.env.CONNECTION_STRING).connect();
     console.log('Connected to the database');
 
     return connection;
@@ -23,7 +19,7 @@ function getConnection() {
 function closeConnection() {
     connection?.close();
     connection = null;
-    console.log('Connection closed');
+    console.log('\nDisconected from the database');
 }
 
 function getCollection(collection) {
