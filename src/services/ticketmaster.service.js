@@ -100,7 +100,6 @@ function parseEvents(data){
             };
             result.push(evento);
         }
-
     });
     //console.log(result);
     return result;
@@ -183,6 +182,7 @@ function parseParams(params) {
       .map(([key, value]) => (value !== undefined ? `${key}=${encodeURIComponent(value)}` : null))
       .join('&');
     return query;
+}
 }
 
 async function paramsAdapter(params){
