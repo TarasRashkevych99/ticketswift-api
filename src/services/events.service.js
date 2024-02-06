@@ -1,11 +1,11 @@
-require("dotenv").config();
-const { getEvents, parseParams } = require("./ticketmaster.service");
+require('dotenv').config();
+const { getEvents, parseParams } = require('./ticketmaster.service');
 const ngeohash = require('ngeohash');
 
 
 async function fetchFromAPI(params = {}) {
     try {
-        const url  = process.env.LOCAL_URL + "/events?" + parseParams(params);
+        const url  = process.env.LOCAL_URL + '/events?' + parseParams(params);
         console.log(url);
         const response = await fetch(url);
         const data = await response.json();
@@ -17,13 +17,13 @@ async function fetchFromAPI(params = {}) {
 
 async function fetchById(id) {
     try {
-        const url  = process.env.LOCAL_URL + "/events/" + id;
+        const url  = process.env.LOCAL_URL + '/events/' + id;
         console.log(url);
         const response = await fetch(url);
         const data = await response.json();
         return data;
     } catch (error) {
-        throw error
+        throw error;
     }
 }
 
@@ -39,7 +39,7 @@ async function getAllEvents(params = {}){
                     console.log(result.reason);    
                 } 
             }
-        )).then(() => {
+            )).then(() => {
             return allEvents;
         });
 

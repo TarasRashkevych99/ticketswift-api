@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config();
 
 const weatherMap = {
     0: 'Clear sky',
@@ -35,9 +35,9 @@ const weatherMap = {
 function weatherCondition(code){
     if (weatherMap.hasOwnProperty(code)) {
         return weatherMap[code];
-      } else {
+    } else {
         return 'Unknown weather code';
-      }
+    }
 }
 
 function isDateWithinDays(inputDate, n) {
@@ -59,16 +59,16 @@ function parseResponse(response, date){
     let precipitationProb = response.daily.precipitation_probability_max[pos];
 
     return {
-        "lat": latitude,
-        "lon": longitude,
-        "units": {
-            "temperature": tUnit,
-            "probability": precUnit
+        'lat': latitude,
+        'lon': longitude,
+        'units': {
+            'temperature': tUnit,
+            'probability': precUnit
         },
-        "weather": weather,
-        "max_temperature": maxTemp,
-        "min_temperature": minTemp,
-        "precipitation_probability": precipitationProb
+        'weather': weather,
+        'max_temperature': maxTemp,
+        'min_temperature': minTemp,
+        'precipitation_probability': precipitationProb
     };
 }
 
@@ -80,8 +80,8 @@ async function getWeather(params){
     const lat = params.lat;
     const lon = params.lon;
     try {
-        const url  = process.env.FORECAST_URL + "?latitude=" + lat + "&longitude=" + lon + "&daily=" +
-                    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=16";
+        const url  = process.env.FORECAST_URL + '?latitude=' + lat + '&longitude=' + lon + '&daily=' +
+                    'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=16';
         console.log(url);
         const response = await fetch(url);
         const data = parseResponse(await response.json(), params.date);

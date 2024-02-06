@@ -1,13 +1,13 @@
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const paypalBaseURL = "https://api-m.sandbox.paypal.com";
+const paypalBaseURL = 'https://api-m.sandbox.paypal.com';
 
 const PaymentsState = Object.freeze({
-    "Pending": 0,
-    "Failed": 1,
-    "Success": 2,
-    "Canceled": 3
-})
+    'Pending': 0,
+    'Failed': 1,
+    'Success': 2,
+    'Canceled': 3
+});
 
 /**
  * Generate an OAuth 2.0 access token for authenticating with PayPal REST APIs.
@@ -16,23 +16,23 @@ const PaymentsState = Object.freeze({
 const generateAccessToken = async () => {
     try {
         if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-            throw new Error("MISSING_API_CREDENTIALS");
+            throw new Error('MISSING_API_CREDENTIALS');
         }
         const auth = Buffer.from(
-            PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET,
-        ).toString("paypalBaseURL64");
+            PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET,
+        ).toString('paypalBaseURL64');
         const response = await fetch(`${paypalBaseURL}/v1/oauth2/token`, {
-            method: "POST",
-            body: "grant_type=client_credentials",
+            method: 'POST',
+            body: 'grant_type=client_credentials',
             headers: {
-            Authorization: `Basic ${auth}`,
+                Authorization: `Basic ${auth}`,
             },
         });
     
         const data = await response.json();
         return data.access_token;
     } catch (error) {
-    console.error("Failed to generate Access Token:", error);
+        console.error('Failed to generate Access Token:', error);
     }
 };
   
@@ -44,18 +44,18 @@ const createOrder = async (cart) => {
 
     let price = 0;
     cart.forEach(item => {
-        const itemPrice = 1                             // TODO ?? Recupero dal DB
+        const itemPrice = 1;                             // TODO ?? Recupero dal DB
         price += itemPrice * item.quantity;
     });
-    console.log(price)
+    console.log(price);
 
     const accessToken = await generateAccessToken();
     const url = `${paypalBaseURL}/v2/checkout/orders`;
     const payload = {
-        intent: "CAPTURE",
+        intent: 'CAPTURE',
         purchase_units: [{
             amount: {
-                currency_code: "EUR",
+                currency_code: 'EUR',
                 value: price,
             },
         }],
@@ -63,10 +63,10 @@ const createOrder = async (cart) => {
 
     const response = await fetch(url, {
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`,
         },
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify(payload),
     });
 
@@ -82,9 +82,9 @@ const captureOrder = async (orderID) => {
     const url = `${paypalBaseURL}/v2/checkout/orders/${orderID}/capture`;
 
     const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`
         },
     });

@@ -1,5 +1,5 @@
-const express = require("express");
-const { createOrder, captureOrder } = require("../../services/payments.service")
+const express = require('express');
+const { createOrder, captureOrder } = require('../../services/payments.service');
 
 async function createPayment(req, res) {
     try {
@@ -9,8 +9,8 @@ async function createPayment(req, res) {
 
         // TODO ?? Aggiungo purchase nel DB
     } catch (error) {
-        console.error("Failed to create order:", error);
-        res.status(500).json({ error: "Failed to create order." });
+        console.error('Failed to create order:', error);
+        res.status(500).json({ error: 'Failed to create order.' });
     }
 }
 
@@ -23,16 +23,16 @@ async function capturePayment(req, res) {
         // TODO ?? Aggiorno state del purchase nel DB
 
     } catch (error) {
-        console.error("Failed to create order:", error);
-        res.status(500).json({ error: "Failed to capture order." });
+        console.error('Failed to create order:', error);
+        res.status(500).json({ error: 'Failed to capture order.' });
     }
 }
 
 module.exports = function () {
-  const router = express.Router();
+    const router = express.Router();
 
-  router.post("/", createPayment);
-  router.post("/:orderId/capture", capturePayment);
+    router.post('/', createPayment);
+    router.post('/:orderId/capture', capturePayment);
 
-  return router;
+    return router;
 };
