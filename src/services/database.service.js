@@ -1,10 +1,13 @@
 require('dotenv').config();
-const { json } = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 
 const client = new MongoClient(process.env.CONNECTION_STRING);
 
 async function getDbLocations(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
+
     await client.connect();
     const database = client.db('Shop');
     const collection = database.collection('locations');
@@ -16,17 +19,61 @@ async function getDbLocations(quary = {}) {
 }
 
 async function getDbEvents(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
+
     await client.connect();
     const database = client.db('Shop');
     const collection = database.collection('events');
-    const result = await collection.find(quary).toArray();
+    const result = await collection.find(quary).sort({ date: 1 }).toArray();
 
     await client.close();
 
     return result;
 }
 
+async function getDbEvent(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
+
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('events');
+    const result = await collection
+        .aggregate([
+            {
+                $match: quary,
+            },
+            {
+                $lookup: {
+                    from: 'locations',
+                    localField: 'venueId',
+                    foreignField: '_id',
+                    as: 'venues',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'artists',
+                    localField: 'artistId',
+                    foreignField: '_id',
+                    as: 'artists',
+                },
+            },
+        ])
+        .toArray();
+    await client.close();
+
+    return result;
+}
+
 async function getDbArtists(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
+
     await client.connect();
     const database = client.db('Shop');
     const collection = database.collection('artists');
@@ -37,22 +84,4 @@ async function getDbArtists(quary = {}) {
     return result;
 }
 
-async function createUser(user) {
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('users');
-    const result = await collection.insertOne(user);
-
-    await client.close();
-
-    return result;
-}
-
-module.exports = {
-    // client,
-    ObjectId,
-    getDbLocations,
-    getDbEvents,
-    getDbArtists,
-    createUser,
-};
+module.exports = { getDbLocations, getDbEvents, getDbEvent, getDbArtists };

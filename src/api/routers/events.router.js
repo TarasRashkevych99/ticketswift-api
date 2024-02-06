@@ -1,15 +1,21 @@
 const express = require('express');
 const geolib = require('geolib');
-const {
-    client,
-    ObjectId,
-    getDbEvents,
-} = require('../../services/database.service');
+const { getDbEvents, getDbEvent } = require('../../services/database.service');
+const validationService = require('../../services/validation.service');
 
 async function getEvents(req, res) {
+    //Zod input validation
+    let validation = validationService.paramsSchema.safeParse(req.query);
+    if (!validation.success) return res.status(400).send(validation.error);
+
     const lat = req.query['lat'];
     const lon = req.query['lon'];
-    let radius = req.query['radius'] ?? 100; //Km
+    let radius = req.query['radius'] ?? 100;
+    let keyword = req.query['keyword'];
+    let genre = req.query['genre'];
+    let subgenere = req.query['subgenre'];
+    let from = req.query['from'];
+    let to = req.query['to'];
 
     //Check if lat and lon are provided
     if ((lat && !lon) || (!lat && lon)) {
@@ -18,8 +24,16 @@ async function getEvents(req, res) {
             .json({ error: 'Both lat and lon parameters are required.' });
     }
 
+    let query = {
+        ...(keyword && { name: { $regex: new RegExp(keyword, 'i') } }),
+        ...(genre && { genre: { $regex: new RegExp(genre, 'i') } }),
+        ...(subgenere && { subgenere: { $regex: new RegExp(subgenere, 'i') } }),
+        ...(from &&
+            to && { date: { $gte: new Date(from), $lte: new Date(to) } }),
+    };
+    console.log(query);
     try {
-        let result = await getDbEvents();
+        let result = await getDbEvents(query);
 
         if (lat && lon) {
             //filter by position
@@ -29,7 +43,7 @@ async function getEvents(req, res) {
             };
 
             result = result.filter((event) => {
-                const eventLocation = event['location'];
+                const eventLocation = event['coordinates'];
                 const distance = geolib.getDistance(
                     userLocation,
                     eventLocation
@@ -50,10 +64,14 @@ async function getEvents(req, res) {
 }
 
 async function getEventById(req, res) {
+    //Zod input validation
+    let validation = validationService.idSchema.safeParse(req.params.eventId);
+    if (!validation.success) return res.status(400).send(validation.error);
+
     const eventId = req.params.eventId;
 
     try {
-        const result = await getDbEvents({ _id: new ObjectId(eventId) });
+        const result = await getDbEvent({ _id: eventId });
         res.status(200).json(result);
     } catch (error) {
         console.error('Error:', error);
@@ -61,11 +79,15 @@ async function getEventById(req, res) {
     }
 }
 
-async function getTickes(req, res) {
+async function getTickets(req, res) {
+    //Zod input validation
+    let validation = validationService.idSchema.safeParse(req.params.eventId);
+    if (!validation.success) return res.status(400).send(validation.error);
+
     const eventId = req.params.eventId;
 
     try {
-        const result = await getDbEvents({ _id: new ObjectId(eventId) });
+        const result = await getDbEvents({ _id: eventId });
         let first = result[0];
         res.status(200).json(first['tickets']);
     } catch (error) {
@@ -79,7 +101,7 @@ module.exports = function () {
 
     router.get('/', getEvents);
     router.get('/:eventId', getEventById);
-    router.get('/:eventId/tickets', getTickes);
+    router.get('/:eventId/tickets', getTickets);
 
     return router;
 };
