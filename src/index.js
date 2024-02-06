@@ -1,23 +1,34 @@
-require("dotenv").config();
-const express = require("express");
-const middlewares = require("./middlewares");
-const geolib = require("geolib");
-const r = require("./api/router");
+require('dotenv').config();
+const express = require('express');
+const middlewares = require('./middlewares');
+const getApisRouter = require('./api/router');
+const context = require('./services/context.service');
 
 const app = express();
 
 middlewares(app);
 
-app.get("/", (req, res) => {
-  console.log("Cookies: ", req.cookies["ticketswift"]);
-  console.log("Session: ", req.session);
-  console.log("Session ID: ", req.sessionID);
-  req.session.views = req.session.views ? req.session.views + 1 : 1;
-  console.log("Session views: ", req.session.views);
-  res.send(`Hello World!`);
+app.get('/', (req, res) => {
+    console.log('Cookies: ', req.cookies['ticketswift']);
+    console.log('Session: ', req.session);
+    console.log('Session ID: ', req.sessionID);
+    // req.session.views = req.session.views ? req.session.views + 1 : 1;
+    console.log('Session views: ', req.session.views);
+    res.send('Hello World!');
 });
+
+app.use('/api', getApisRouter());
 
 const port = process.env.PORT || 5000;
 
-app.use("/api", r());
-app.listen(port, () => console.log(`Listening on port ${port}`));
+const server = app.listen(port, async () => {
+    await context.connect();
+    console.log(`Listening on port ${port}`);
+});
+
+process.on('SIGINT', () => {
+    context.closeConnection();
+    console.log('Shutting down the server');
+    server.close();
+    process.exit();
+});

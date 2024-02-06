@@ -1,13 +1,8 @@
-const express = require("express");
-const getRouters = require("./routers");
-const geolib = require("geolib");
+const express = require('express');
+const getRouters = require('./routers');
 
-const { client } = require("../services/database.service");
-
-module.exports = (app) => {
-
-  const router = express.Router();
-  router.use("/", getRouters());
-  return router;
-
+module.exports = () => {
+    const router = express.Router();
+    router.use('/', getRouters());
+    return router;
 };
