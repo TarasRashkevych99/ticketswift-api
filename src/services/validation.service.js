@@ -1,7 +1,7 @@
-const { z, createValidator } = require("zod");
+const { z, createValidator } = require('zod');
 
-let latitudeMsg = { message: "Must be in range: [-90, 90]" };
-let longitudeMsg = { message: "Must be in range [-180, 180]" };
+let latitudeMsg = { message: 'Must be in range: [-90, 90]' };
+let longitudeMsg = { message: 'Must be in range [-180, 180]' };
 
 
 const paramsSchema = z.object({
