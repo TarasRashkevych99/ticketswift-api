@@ -1,46 +1,87 @@
-require("dotenv").config();
-const { json } = require("express");
-const { MongoClient, ObjectId } = require("mongodb");
+require('dotenv').config();
+const { MongoClient, ObjectId } = require('mongodb');
 
-const client = new MongoClient(process.env.DATABASE_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(process.env.CONNECTION_STRING);
 
 async function getDbLocations(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
 
-  await client.connect();
-  const database = client.db("Shop");
-  const collection = database.collection("locations");
-  const result = await collection.find(quary).toArray();
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('locations');
+    const result = await collection.find(quary).toArray();
 
-  await client.close();
+    await client.close();
 
-  return result;
+    return result;
 }
 
 async function getDbEvents(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
 
-  await client.connect();
-  const database = client.db("Shop");
-  const collection = database.collection("events");
-  const result = await collection.find(quary).toArray();
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('events');
+    const result = await collection.find(quary).sort({ date: 1 }).toArray();
 
-  await client.close();
+    await client.close();
 
-  return result;
+    return result;
+}
+
+async function getDbEvent(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
+
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('events');
+    const result = await collection
+        .aggregate([
+            {
+                $match: quary,
+            },
+            {
+                $lookup: {
+                    from: 'locations',
+                    localField: 'venueId',
+                    foreignField: '_id',
+                    as: 'venues',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'artists',
+                    localField: 'artistId',
+                    foreignField: '_id',
+                    as: 'artists',
+                },
+            },
+        ])
+        .toArray();
+    await client.close();
+
+    return result;
 }
 
 async function getDbArtists(quary = {}) {
+    if (quary._id) {
+        quary._id = new ObjectId(quary._id);
+    }
 
-  await client.connect();
-  const database = client.db("Shop");
-  const collection = database.collection("artists");
-  const result = await collection.find(quary).toArray();
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('artists');
+    const result = await collection.find(quary).toArray();
 
-  await client.close();
+    await client.close();
 
-  return result;
+    return result;
 }
 
 /* TODO 
@@ -53,43 +94,48 @@ async function getDbArtists(quary = {}) {
     + Capire come funziona il redirect dopo completamento del pagamento paypal.
 */
 
-async function addPurchase(purchaseData){
+async function addPurchase(purchaseData) {
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('purchases');
 
-  await client.connect();
-  const database = client.db("Shop");
-  const collection = database.collection("purchases");
+    const newPurchase = {
+        cart: purchaseData.cart,
+        userId: purchaseData.userId,
+        date: newDate(),
+        state: 'pending',
+    };
 
-  const newPurchase = {
-    cart: purchaseData.cart,
-    userId: purchaseData.userId,
-    date: newDate(),
-    state: "pending"
-  }
+    const result = await collection.insertOne(newPurchase);
 
-  const result = await collection.insertOne(newPurchase);
+    await client.close();
 
-  await client.close();
-
-  return result.insertedId;
-
+    return result.insertedId;
 }
 
-async function updatePurchaseState(purchaseId, newState){
+async function updatePurchaseState(purchaseId, newState) {
+    await client.connect();
+    const database = client.db('Shop');
+    const collection = database.collection('purchases');
 
-  await client.connect();
-  const database = client.db("Shop");
-  const collection = database.collection("purchases");
+    const filter = { _id: ObjectId(purchaseId) };
+    const updatePurchase = {
+        $set: {
+            state: newState,
+        },
+    };
 
-  const filter = {_id: ObjectId(purchaseId)};
-  const updatePurchase = {
-    $set: {
-      state: newState
-    }
-  };
+    const result = await collection.updateOne(filter, updatePurchase);
 
-  const result = await collection.updateOne(filter, updatePurchase);
-
-  await client.close();  
+    await client.close();
 }
 
-module.exports = { client, ObjectId, getDbLocations, getDbEvents, getDbArtists, addPurchase, updatePurchaseState};
+module.exports = {
+    client,
+    ObjectId,
+    getDbLocations,
+    getDbEvents,
+    getDbArtists,
+    addPurchase,
+    updatePurchaseState,
+};
