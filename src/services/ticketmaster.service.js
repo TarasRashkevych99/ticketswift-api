@@ -72,14 +72,14 @@ function parseEvents(data) {
                     name: 'Premium Ticket',
                     availability: 50,
                     price: Math.floor(Math.random() * 125 + standardPrice),
-                    id: uuidv4(),
+                    _id: uuidv4(),
                 });
             }
 
             let evento = {
-                id: id,
+                _id: id,
                 name: name,
-                url: url,
+                //url: url,
                 image: image.url,
                 tickets: tickets,
                 saleStart: startSaleTime,
@@ -88,15 +88,15 @@ function parseEvents(data) {
                 genre: genre,
                 subgenre: subgenere,
                 location: {
-                    id: lid,
+                    _id: lid,
                     name: lname,
                     //"locale": locale,
-                    ...(postalCode && { postal_code: postalCode }),
+                    ...(postalCode && { postalCode: postalCode }),
                     city: city,
                     ...(state && { state: state }),
                     country: country,
                     ...(address && { address: address }),
-                    pos: pos,
+                    coordinates: pos,
                 },
             };
             result.push(evento);
@@ -202,11 +202,12 @@ async function paramsAdapter(params) {
     let newParams = {
         ...(params['lon'] &&
             params['lat'] && {
-            'locale=*&geoPoint': ngeohash.encode(
+            'geoPoint': ngeohash.encode(
                 params['lat'],
                 params['lon']
             ),
         }),
+        'locale': '*',
         ...(params['radius'] && { radius: params['radius'] }),
         ...(params['keyword'] && { keyword: params['keyword'] }),
         ...(params['genre'] && { segmentId: await getGenres(params['genre']) }),

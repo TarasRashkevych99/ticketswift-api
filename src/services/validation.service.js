@@ -13,9 +13,14 @@ const paramsSchema = z.object({
     subgenere: z.string().optional(),
     from: z.coerce.date().optional(),
     to: z.coerce.date().optional(),
-});
+}).refine(schema => {
+    return !(
+        (schema.lat === undefined && schema.lon !== undefined) ||
+        (schema.lon === undefined && schema.lat !== undefined)
+    ); 
+}, "lat and long need to be specified together");;
 
-const idSchema = z.string().regex(new RegExp(/^[a-zA-Z0-9]+$/));
+const idSchema = z.string()//.regex(new RegExp(/^[a-zA-Z0-9]+$/));
 
 module.exports = {paramsSchema, idSchema};
 
