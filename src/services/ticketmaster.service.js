@@ -38,13 +38,17 @@ function parseEvents(data) {
             }
             let startEventTime = event['dates']['start']['dateTime'];
             //var status = event['dates']['status']['code'];
-
+            
             //get classifications
             let classifications = event['classifications'];
-            let genre = classifications[0]?.['segment']?.['name'] ?? undefined;
-            let subgenere = [
-                classifications[0]?.['genre']?.['name'] ?? undefined,
-            ];
+            let genre = undefined;
+            let subgenere = undefined;
+            if(classifications){
+                genre = classifications[0]?.['segment']?.['name'] ?? undefined;
+                subgenere = [
+                    classifications[0]?.['genre']?.['name'] ?? undefined,
+                ];
+            }
 
             //get location
             location = event['_embedded']['venues'][0];
