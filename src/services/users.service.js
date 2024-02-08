@@ -24,7 +24,7 @@ async function createUser(userInfo) {
     const userId = (
         await context.getCollection('users').insertOne({
             createdOn: new Date(),
-            modifedOn: new Date(),
+            modifiedOn: new Date(),
             email: userInfo.email,
             password: hashedPassword,
         })

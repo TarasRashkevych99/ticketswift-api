@@ -10,7 +10,7 @@ async function getEvents(req, res){
     if (!validation.success) return res.status(400).send(validation.error);
 
     try {
-        if(req.query.type == "local"){
+        if(req.query.type == 'local'){
             let result =  await getLocalEvents(req, res);
             res.status(200).json(result);
         }else{
