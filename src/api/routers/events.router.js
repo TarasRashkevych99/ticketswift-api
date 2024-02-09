@@ -10,7 +10,7 @@ async function getEvents(req, res){
     if (!validation.success) return res.status(400).send(validation.error);
 
     try {
-        if(req.query.type == 'local'){
+        if(req.query.local == 'true'){
             let result =  await getLocalEvents(req, res);
             res.status(200).json(result);
         }else{
@@ -47,17 +47,11 @@ async function getLocalEvents(req, res) {
     let from = req.query['from'];
     let to = req.query['to'];
 
-    //Check if lat and lon are provided
-    // if ((lat && !lon) || (!lat && lon)) {
-    //     return res
-    //         .status(400)
-    //         .json({ error: 'Both lat and lon parameters are required.' });
-    // }
-
     let query = {
         ...(keyword && { name: { $regex: new RegExp(keyword, 'i') } }),
         ...(genre && { genre: { $regex: new RegExp(genre, 'i') } }),
         ...(subgenere && { subgenere: { $regex: new RegExp(subgenere, 'i') } }),
+        ...(from && !to && { date: { $gt: new Date(from) } }),
         ...(from &&
             to && { date: { $gte: new Date(from), $lte: new Date(to) } }),
     };
