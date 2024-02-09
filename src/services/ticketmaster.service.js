@@ -219,12 +219,17 @@ async function paramsAdapter(params) {
             genreId: await getSubgenres(params['subgenre']),
         }),
         ...(params['id'] && { id: params['id'] }),
+        ...(params['from'] && !params['to'] && {
+            startDateTime: params['from'],
+            sort: 'date,asc'
+        }),
         ...(params['from'] &&
             params['to'] && {
             startDateTime: params['from'],
             endDateTime: params['to'],
         }),
     };
+    console.log('-------------------------------');
     console.log(newParams);
     return newParams;
 }
