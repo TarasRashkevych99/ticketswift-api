@@ -1,5 +1,8 @@
 const express = require('express');
-const { createOrder, captureOrder } = require('../../services/payments.service');
+const {
+    createOrder,
+    captureOrder,
+} = require('../../services/payments.service');
 
 async function createPayment(req, res) {
     try {
@@ -21,7 +24,6 @@ async function capturePayment(req, res) {
         res.status(httpStatusCode).json(jsonResponse);
 
         // TODO ?? Aggiorno state del purchase nel DB
-
     } catch (error) {
         console.error('Failed to create order:', error);
         res.status(500).json({ error: 'Failed to capture order.' });

@@ -38,12 +38,12 @@ function parseEvents(data) {
             }
             let startEventTime = event['dates']['start']['dateTime'];
             //var status = event['dates']['status']['code'];
-            
+
             //get classifications
             let classifications = event['classifications'];
             let genre = undefined;
             let subgenere = undefined;
-            if(classifications){
+            if (classifications) {
                 genre = classifications[0]?.['segment']?.['name'] ?? undefined;
                 subgenere = [
                     classifications[0]?.['genre']?.['name'] ?? undefined,
@@ -202,16 +202,14 @@ function parseParams(params) {
     return query;
 }
 
+/* eslint-disable indent */
 async function paramsAdapter(params) {
     let newParams = {
         ...(params['lon'] &&
             params['lat'] && {
-            'geoPoint': ngeohash.encode(
-                params['lat'],
-                params['lon']
-            ),
-        }),
-        'locale': '*',
+                geoPoint: ngeohash.encode(params['lat'], params['lon']),
+            }),
+        locale: '*',
         ...(params['radius'] && { radius: params['radius'] }),
         ...(params['keyword'] && { keyword: params['keyword'] }),
         ...(params['genre'] && { segmentId: await getGenres(params['genre']) }),
@@ -219,15 +217,16 @@ async function paramsAdapter(params) {
             genreId: await getSubgenres(params['subgenre']),
         }),
         ...(params['id'] && { id: params['id'] }),
-        ...(params['from'] && !params['to'] && {
-            startDateTime: params['from'],
-            sort: 'date,asc'
-        }),
+        ...(params['from'] &&
+            !params['to'] && {
+                startDateTime: params['from'],
+                sort: 'date,asc',
+            }),
         ...(params['from'] &&
             params['to'] && {
-            startDateTime: params['from'],
-            endDateTime: params['to'],
-        }),
+                startDateTime: params['from'],
+                endDateTime: params['to'],
+            }),
     };
     console.log('-------------------------------');
     console.log(newParams);

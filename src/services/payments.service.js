@@ -3,10 +3,10 @@ const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 const paypalBaseURL = 'https://api-m.sandbox.paypal.com';
 
 const PaymentsState = Object.freeze({
-    'Pending': 0,
-    'Failed': 1,
-    'Success': 2,
-    'Canceled': 3
+    Pending: 0,
+    Failed: 1,
+    Success: 2,
+    Canceled: 3,
 });
 
 /**
@@ -19,7 +19,7 @@ const generateAccessToken = async () => {
             throw new Error('MISSING_API_CREDENTIALS');
         }
         const auth = Buffer.from(
-            PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET,
+            PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET
         ).toString('paypalBaseURL64');
         const response = await fetch(`${paypalBaseURL}/v1/oauth2/token`, {
             method: 'POST',
@@ -28,23 +28,22 @@ const generateAccessToken = async () => {
                 Authorization: `Basic ${auth}`,
             },
         });
-    
+
         const data = await response.json();
         return data.access_token;
     } catch (error) {
         console.error('Failed to generate Access Token:', error);
     }
 };
-  
+
 /**
  * Create an order to start the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
  */
 const createOrder = async (cart) => {
-
     let price = 0;
-    cart.forEach(item => {
-        const itemPrice = 1;                             // TODO ?? Recupero dal DB
+    cart.forEach((item) => {
+        const itemPrice = 1; // TODO ?? Recupero dal DB
         price += itemPrice * item.quantity;
     });
     console.log(price);
@@ -53,12 +52,14 @@ const createOrder = async (cart) => {
     const url = `${paypalBaseURL}/v2/checkout/orders`;
     const payload = {
         intent: 'CAPTURE',
-        purchase_units: [{
-            amount: {
-                currency_code: 'EUR',
-                value: price,
+        purchase_units: [
+            {
+                amount: {
+                    currency_code: 'EUR',
+                    value: price,
+                },
             },
-        }],
+        ],
     };
 
     const response = await fetch(url, {
@@ -85,7 +86,7 @@ const captureOrder = async (orderID) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
         },
     });
 
@@ -104,6 +105,5 @@ async function handleResponse(response) {
         throw new Error(errorMessage);
     }
 }
-
 
 module.exports = { createOrder, captureOrder };

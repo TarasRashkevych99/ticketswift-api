@@ -4,40 +4,42 @@ const { getDbEvents, getDbEvent } = require('../../services/database.service');
 const ticketmaster = require('../../services/ticketmaster.service');
 const validationService = require('../../services/validation.service');
 
-async function getEvents(req, res){
+async function getEvents(req, res) {
     //Zod input validation
     let validation = validationService.paramsSchema.safeParse(req.query);
     if (!validation.success) return res.status(400).send(validation.error);
 
     try {
-        if(req.query.local == 'true'){
-            let result =  await getLocalEvents(req, res);
+        if (req.query.local == 'true') {
+            let result = await getLocalEvents(req, res);
             res.status(200).json(result);
-        }else{
+        } else {
             let allEvents = [];
 
-            return Promise.allSettled([ticketmaster.getEvents(req.query), getLocalEvents(req, res)]).then((results) =>
-                results.forEach((result) => {
-                    if(result.value){
-                        allEvents.push(...(result.value));
-                    }else{
-                        console.log(result.reason);    
-                    } 
-                }
-                )).then(() => {
-                return res.status(200).json(allEvents);
-            });
-
+            return Promise.allSettled([
+                ticketmaster.getEvents(req.query),
+                getLocalEvents(req, res),
+            ])
+                .then((results) =>
+                    results.forEach((result) => {
+                        if (result.value) {
+                            allEvents.push(...result.value);
+                        } else {
+                            console.log(result.reason);
+                        }
+                    })
+                )
+                .then(() => {
+                    return res.status(200).json(allEvents);
+                });
         }
     } catch (error) {
         console.error('Errore durante il recupero dei dati:', error);
         res.status(500).send('Internal Server Error');
     }
-  
 }
 
 async function getLocalEvents(req, res) {
-
     const lat = req.query['lat'];
     const lon = req.query['lon'];
     let radius = req.query['radius'] ?? 100;
@@ -68,34 +70,31 @@ async function getLocalEvents(req, res) {
 
         result = result.filter((event) => {
             const eventLocation = event['coordinates'];
-            const distance = geolib.getDistance(
-                userLocation,
-                eventLocation
-            );
+            const distance = geolib.getDistance(userLocation, eventLocation);
             const distanceInKm = geolib.convertDistance(distance, 'km');
-            console.log(
-                'DISTANCE => ' + distanceInKm + ' RANGE => ' + radius
-            );
+            console.log('DISTANCE => ' + distanceInKm + ' RANGE => ' + radius);
             return distanceInKm <= parseFloat(radius);
         });
     }
     return result;
 }
 
-async function getEventById(req, res){
+async function getEventById(req, res) {
     //Zod input validation
     let validation = validationService.idSchema.safeParse(req.params.eventId);
     if (!validation.success) return res.status(400).send(validation.error);
 
     const eventId = req.params.eventId;
-    
+
     try {
-        const result = await Promise.any([ticketmaster.getEvents({id:eventId, locale:'*'}), getDbEvents({ _id: eventId })]);
+        const result = await Promise.any([
+            ticketmaster.getEvents({ id: eventId, locale: '*' }),
+            getDbEvents({ _id: eventId }),
+        ]);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).send('Internal Server Error');
     }
-
 }
 
 async function getTickets(req, res) {

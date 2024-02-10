@@ -13,7 +13,9 @@ async function getLocations(req, res) {
 
 async function getLocationsById(req, res) {
     //Zod input validation
-    let validation = validationService.idSchema.safeParse(req.params.locationId);
+    let validation = validationService.idSchema.safeParse(
+        req.params.locationId
+    );
     if (!validation.success) return res.status(400).send(validation.error);
 
     const locationId = req.params.locationId;
