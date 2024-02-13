@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { MongoClient, ObjectId } = require('mongodb');
+const context = require('./context.service');
 
 const client = new MongoClient(process.env.CONNECTION_STRING);
 
@@ -8,14 +9,7 @@ async function getDbLocations(quary = {}) {
         quary._id = new ObjectId(quary._id);
     }
 
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('locations');
-    const result = await collection.find(quary).toArray();
-
-    await client.close();
-
-    return result;
+    return await context.getCollection('locations').find(quary).toArray();
 }
 
 async function getDbEvents(quary = {}) {
@@ -23,50 +17,7 @@ async function getDbEvents(quary = {}) {
         quary._id = new ObjectId(quary._id);
     }
 
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('events');
-    const result = await collection.find(quary).sort({ date: 1 }).toArray();
-
-    await client.close();
-
-    return result;
-}
-
-async function getDbEvent(quary = {}) {
-    if (quary._id) {
-        quary._id = new ObjectId(quary._id);
-    }
-
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('events');
-    const result = await collection
-        .aggregate([
-            {
-                $match: quary,
-            },
-            {
-                $lookup: {
-                    from: 'locations',
-                    localField: 'venueId',
-                    foreignField: '_id',
-                    as: 'venues',
-                },
-            },
-            {
-                $lookup: {
-                    from: 'artists',
-                    localField: 'artistId',
-                    foreignField: '_id',
-                    as: 'artists',
-                },
-            },
-        ])
-        .toArray();
-    await client.close();
-
-    return result;
+    return await context.getCollection('events').find(quary).sort({ date: 1 }).toArray();
 }
 
 async function getDbArtists(quary = {}) {
@@ -74,14 +25,7 @@ async function getDbArtists(quary = {}) {
         quary._id = new ObjectId(quary._id);
     }
 
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('artists');
-    const result = await collection.find(quary).toArray();
-
-    await client.close();
-
-    return result;
+    return await context.getCollection('artists').find(quary).toArray();
 }
 
 /* TODO 
