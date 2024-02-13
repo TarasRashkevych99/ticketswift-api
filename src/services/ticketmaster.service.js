@@ -69,7 +69,7 @@ function parseEvents(data) {
                 name: 'Standard Ticket',
                 availability: 50,
                 price: standardPrice,
-                id: uuidv4(),
+                _id: uuidv4(),
             });
             if (Math.floor(Math.random() * 3) == 2) {
                 tickets.push({
