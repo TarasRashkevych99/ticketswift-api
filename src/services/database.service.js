@@ -94,48 +94,12 @@ async function getDbArtists(quary = {}) {
     + Capire come funziona il redirect dopo completamento del pagamento paypal.
 */
 
-async function addPurchase(purchaseData) {
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('purchases');
 
-    const newPurchase = {
-        cart: purchaseData.cart,
-        userId: purchaseData.userId,
-        date: newDate(),
-        state: 'pending',
-    };
-
-    const result = await collection.insertOne(newPurchase);
-
-    await client.close();
-
-    return result.insertedId;
-}
-
-async function updatePurchaseState(purchaseId, newState) {
-    await client.connect();
-    const database = client.db('Shop');
-    const collection = database.collection('purchases');
-
-    const filter = { _id: ObjectId(purchaseId) };
-    const updatePurchase = {
-        $set: {
-            state: newState,
-        },
-    };
-
-    const result = await collection.updateOne(filter, updatePurchase);
-
-    await client.close();
-}
 
 module.exports = {
     client,
     ObjectId,
     getDbLocations,
     getDbEvents,
-    getDbArtists,
-    addPurchase,
-    updatePurchaseState,
+    getDbArtists
 };
