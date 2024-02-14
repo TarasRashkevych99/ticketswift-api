@@ -15,13 +15,13 @@ async function getArtists(req, res) {
 
 async function getArtistsById(req, res) {
     //Zod input validation
-    let validation = validationService.idSchema.safeParse(req.params.eventId);
+    let validation = validationService.idSchema.safeParse(req.params.artistId);
     if (!validation.success) return res.status(400).send(validation.error);
 
-    const eventId = req.params.eventId;
+    const artistId = req.params.artistId;
 
     try {
-        const result = await getDbArtists({ _id: eventId });
+        const result = await getDbArtists({ _id: artistId });
         res.status(200).json(result);
     } catch (error) {
         console.error('Error:', error);
@@ -33,7 +33,7 @@ module.exports = function () {
     const router = express.Router();
 
     router.get('/', getArtists);
-    router.get('/:eventId', getArtistsById);
+    router.get('/:artistId', getArtistsById);
 
     return router;
 };

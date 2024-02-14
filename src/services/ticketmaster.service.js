@@ -41,10 +41,14 @@ function parseEvents(data) {
 
             //get classifications
             let classifications = event['classifications'];
-            let genre = classifications[0]?.['segment']?.['name'] ?? undefined;
-            let subgenere = [
-                classifications[0]?.['genre']?.['name'] ?? undefined,
-            ];
+            let genre = undefined;
+            let subgenere = undefined;
+            if (classifications) {
+                genre = classifications[0]?.['segment']?.['name'] ?? undefined;
+                subgenere = [
+                    classifications[0]?.['genre']?.['name'] ?? undefined,
+                ];
+            }
 
             //get location
             location = event['_embedded']['venues'][0];
@@ -65,21 +69,21 @@ function parseEvents(data) {
                 name: 'Standard Ticket',
                 availability: 50,
                 price: standardPrice,
-                id: uuidv4(),
+                _id: uuidv4(),
             });
             if (Math.floor(Math.random() * 3) == 2) {
                 tickets.push({
                     name: 'Premium Ticket',
                     availability: 50,
                     price: Math.floor(Math.random() * 125 + standardPrice),
-                    id: uuidv4(),
+                    _id: uuidv4(),
                 });
             }
 
             let evento = {
-                id: id,
+                _id: id,
                 name: name,
-                url: url,
+                //url: url,
                 image: image.url,
                 tickets: tickets,
                 saleStart: startSaleTime,
@@ -88,15 +92,15 @@ function parseEvents(data) {
                 genre: genre,
                 subgenre: subgenere,
                 location: {
-                    id: lid,
+                    _id: lid,
                     name: lname,
                     //"locale": locale,
-                    ...(postalCode && { postal_code: postalCode }),
+                    ...(postalCode && { postalCode: postalCode }),
                     city: city,
                     ...(state && { state: state }),
                     country: country,
                     ...(address && { address: address }),
-                    pos: pos,
+                    coordinates: pos,
                 },
             };
             result.push(evento);
@@ -198,15 +202,14 @@ function parseParams(params) {
     return query;
 }
 
+/* eslint-disable indent */
 async function paramsAdapter(params) {
     let newParams = {
         ...(params['lon'] &&
             params['lat'] && {
-            'locale=*&geoPoint': ngeohash.encode(
-                params['lat'],
-                params['lon']
-            ),
-        }),
+                geoPoint: ngeohash.encode(params['lat'], params['lon']),
+            }),
+        locale: '*',
         ...(params['radius'] && { radius: params['radius'] }),
         ...(params['keyword'] && { keyword: params['keyword'] }),
         ...(params['genre'] && { segmentId: await getGenres(params['genre']) }),
@@ -215,11 +218,17 @@ async function paramsAdapter(params) {
         }),
         ...(params['id'] && { id: params['id'] }),
         ...(params['from'] &&
+            !params['to'] && {
+                startDateTime: params['from'],
+                sort: 'date,asc',
+            }),
+        ...(params['from'] &&
             params['to'] && {
-            startDateTime: params['from'],
-            endDateTime: params['to'],
-        }),
+                startDateTime: params['from'],
+                endDateTime: params['to'],
+            }),
     };
+    console.log('-------------------------------');
     console.log(newParams);
     return newParams;
 }

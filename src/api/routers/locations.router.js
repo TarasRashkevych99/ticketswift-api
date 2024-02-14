@@ -13,13 +13,15 @@ async function getLocations(req, res) {
 
 async function getLocationsById(req, res) {
     //Zod input validation
-    let validation = validationService.idSchema.safeParse(req.params.eventId);
+    let validation = validationService.idSchema.safeParse(
+        req.params.locationId
+    );
     if (!validation.success) return res.status(400).send(validation.error);
 
-    const eventId = req.params.eventId;
+    const locationId = req.params.locationId;
 
     try {
-        res.status(200).json(await getDbLocations({ _id: eventId }));
+        res.status(200).json(await getDbLocations({ _id: locationId }));
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Internal Server Error');
@@ -30,7 +32,7 @@ module.exports = function () {
     const router = express.Router();
 
     router.get('/', getLocations);
-    router.get('/:eventId', getLocationsById);
+    router.get('/:locationId', getLocationsById);
 
     return router;
 };

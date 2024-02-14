@@ -1,6 +1,7 @@
 const express = require('express');
 const geolib = require('geolib');
 const { getDbEvents, getDbEvent } = require('../../services/database.service');
+const ticketmaster = require('../../services/ticketmaster.service');
 const validationService = require('../../services/validation.service');
 
 async function getEvents(req, res) {
@@ -8,6 +9,37 @@ async function getEvents(req, res) {
     let validation = validationService.paramsSchema.safeParse(req.query);
     if (!validation.success) return res.status(400).send(validation.error);
 
+    try {
+        if (req.query.local == 'true') {
+            let result = await getLocalEvents(req, res);
+            res.status(200).json(result);
+        } else {
+            let allEvents = [];
+
+            return Promise.allSettled([
+                ticketmaster.getEvents(req.query),
+                getLocalEvents(req, res),
+            ])
+                .then((results) =>
+                    results.forEach((result) => {
+                        if (result.value) {
+                            allEvents.push(...result.value);
+                        } else {
+                            console.log(result.reason);
+                        }
+                    })
+                )
+                .then(() => {
+                    return res.status(200).json(allEvents);
+                });
+        }
+    } catch (error) {
+        console.error('Errore durante il recupero dei dati:', error);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+async function getLocalEvents(req, res) {
     const lat = req.query['lat'];
     const lon = req.query['lon'];
     let radius = req.query['radius'] ?? 100;
@@ -17,50 +49,34 @@ async function getEvents(req, res) {
     let from = req.query['from'];
     let to = req.query['to'];
 
-    //Check if lat and lon are provided
-    if ((lat && !lon) || (!lat && lon)) {
-        return res
-            .status(400)
-            .json({ error: 'Both lat and lon parameters are required.' });
-    }
-
     let query = {
         ...(keyword && { name: { $regex: new RegExp(keyword, 'i') } }),
         ...(genre && { genre: { $regex: new RegExp(genre, 'i') } }),
         ...(subgenere && { subgenere: { $regex: new RegExp(subgenere, 'i') } }),
+        ...(from && !to && { date: { $gt: new Date(from) } }),
         ...(from &&
             to && { date: { $gte: new Date(from), $lte: new Date(to) } }),
     };
     console.log(query);
-    try {
-        let result = await getDbEvents(query);
+    // try {
+    let result = await getDbEvents(query);
 
-        if (lat && lon) {
-            //filter by position
-            const userLocation = {
-                latitude: parseFloat(lat),
-                longitude: parseFloat(lon),
-            };
+    if (lat && lon) {
+        //filter by position
+        const userLocation = {
+            latitude: parseFloat(lat),
+            longitude: parseFloat(lon),
+        };
 
-            result = result.filter((event) => {
-                const eventLocation = event['coordinates'];
-                const distance = geolib.getDistance(
-                    userLocation,
-                    eventLocation
-                );
-                const distanceInKm = geolib.convertDistance(distance, 'km');
-                console.log(
-                    'DISTANCE => ' + distanceInKm + ' RANGE => ' + radius
-                );
-                return distanceInKm <= parseFloat(radius);
-            });
-        }
-
-        res.status(200).json(result);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send('Internal Server Error');
+        result = result.filter((event) => {
+            const eventLocation = event['coordinates'];
+            const distance = geolib.getDistance(userLocation, eventLocation);
+            const distanceInKm = geolib.convertDistance(distance, 'km');
+            console.log('DISTANCE => ' + distanceInKm + ' RANGE => ' + radius);
+            return distanceInKm <= parseFloat(radius);
+        });
     }
+    return result;
 }
 
 async function getEventById(req, res) {
@@ -71,10 +87,12 @@ async function getEventById(req, res) {
     const eventId = req.params.eventId;
 
     try {
-        const result = await getDbEvent({ _id: eventId });
+        const result = await Promise.any([
+            ticketmaster.getEvents({ id: eventId, locale: '*' }),
+            getDbEvents({ _id: eventId }),
+        ]);
         res.status(200).json(result);
     } catch (error) {
-        console.error('Error:', error);
         res.status(500).send('Internal Server Error');
     }
 }

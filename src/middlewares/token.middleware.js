@@ -41,6 +41,7 @@ function token(req, res, next) {
 
     res.locals = userInfo;
     console.log(res.locals);
+    console.log(req.session.user);
     next();
 }
 

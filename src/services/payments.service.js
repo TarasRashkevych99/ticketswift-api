@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongodb');
 const axios = require('axios');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) =>
+    import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
@@ -16,7 +17,6 @@ const PaymentsState = Object.freeze({
 });
 
 async function addPurchase(purchaseData) {
-
     const newPurchase = {
         payPalId: null,
         userId: new ObjectId(purchaseData.userId),
@@ -24,12 +24,14 @@ async function addPurchase(purchaseData) {
         price: purchaseData.price,
         state: 'pending',
         createdOn: new Date(),
-        modifiedOn: new Date()
+        modifiedOn: new Date(),
     };
 
     //console.log(newPurchase);
 
-    const insertedId = (await context.getCollection('purchases').insertOne(newPurchase)).insertedId;
+    const insertedId = (
+        await context.getCollection('purchases').insertOne(newPurchase)
+    ).insertedId;
     //console.log(insertedId);
 
     const purchase = await getPurchaseById(new ObjectId(insertedId));
@@ -39,7 +41,7 @@ async function addPurchase(purchaseData) {
         throw new Error('Purchase not created');
     }
 
-    return(purchase);
+    return purchase;
 }
 
 async function getPurchaseById(purchaseId) {
@@ -55,19 +57,20 @@ async function getPurchaseByPayPalId(payPalId) {
 }
 
 async function updatePurchaseState(payPalId, newState) {
-    
     const purchase = await getPurchaseByPayPalId(payPalId);
 
     const filter = { payPalId: String(payPalId) };
     const updatePurchase = {
         $set: {
             state: newState,
-        }
+        },
     };
 
-    const result = await context.getCollection('purchases').updateOne(filter, updatePurchase);
-    
-    if(result.modifiedCount <= 0){
+    const result = await context
+        .getCollection('purchases')
+        .updateOne(filter, updatePurchase);
+
+    if (result.modifiedCount <= 0) {
         throw new Error('Could not update Purchase state');
     }
 
@@ -75,24 +78,23 @@ async function updatePurchaseState(payPalId, newState) {
 }
 
 async function updatePurchasePayPalId(purchaseId, payPalId) {
-
     const filter = { _id: new ObjectId(purchaseId) };
     const updatePurchase = {
         $set: {
             payPalId: payPalId,
-        }
+        },
     };
 
-    const result = await context.getCollection('purchases').updateOne(filter, updatePurchase);
-    
-    if(result.modifiedCount <= 0){
+    const result = await context
+        .getCollection('purchases')
+        .updateOne(filter, updatePurchase);
+
+    if (result.modifiedCount <= 0) {
         throw new Error('Could not update Purchase');
     }
 
     return;
 }
-
-
 
 /**
  * Generate an OAuth 2.0 access token for authenticating with PayPal REST APIs.
@@ -105,7 +107,7 @@ const generateAccessToken = async () => {
             throw new Error('MISSING_API_CREDENTIALS');
         }
         const auth = Buffer.from(
-            PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET,
+            PAYPAL_CLIENT_ID + ':' + PAYPAL_CLIENT_SECRET
         ).toString('base64');
         const response = await fetch(`${paypalBaseURL}/v1/oauth2/token`, {
             method: 'POST',
@@ -114,7 +116,7 @@ const generateAccessToken = async () => {
                 Authorization: `Basic ${auth}`,
             },
         });
-  
+
         const data = await response.json();
         //console.log(data.access_token);
         return data.access_token;
@@ -122,25 +124,26 @@ const generateAccessToken = async () => {
         console.error('Failed to generate Access Token:', error);
     }
 };
-  
+
 /**
  * Create an order to start the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
  */
 const createOrder = async (price) => {
-
     console.log('createOrder');
 
     const accessToken = await generateAccessToken();
     const url = `${paypalBaseURL}/v2/checkout/orders`;
     const payload = {
         intent: 'CAPTURE',
-        purchase_units: [{
-            amount: {
-                currency_code: 'EUR',
-                value: price,
+        purchase_units: [
+            {
+                amount: {
+                    currency_code: 'EUR',
+                    value: price,
+                },
             },
-        }],
+        ],
     };
 
     const response = await fetch(url, {
@@ -169,11 +172,15 @@ const captureOrder = async (orderID) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
         },
     });
 
-    console.log('Response ricevuta da ' + `${paypalBaseURL}/v2/checkout/orders/${orderID}/capture` + ', chiamo handleResponse');
+    console.log(
+        'Response ricevuta da ' +
+            `${paypalBaseURL}/v2/checkout/orders/${orderID}/capture` +
+            ', chiamo handleResponse'
+    );
 
     return handleResponse(response);
 };
@@ -191,4 +198,10 @@ async function handleResponse(response) {
     }
 }
 
-module.exports = { createOrder, captureOrder, addPurchase, updatePurchaseState, updatePurchasePayPalId };
+module.exports = {
+    createOrder,
+    captureOrder,
+    addPurchase,
+    updatePurchaseState,
+    updatePurchasePayPalId,
+};

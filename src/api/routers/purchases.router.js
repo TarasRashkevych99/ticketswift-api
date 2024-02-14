@@ -14,22 +14,25 @@ async function createPayment(req, res) {
 
         // TODO Check del coupon
 
-        let price = 1;      // TODO Reimpostare a 0
+        let price = 1; // TODO Reimpostare a 0
         let items = [];
         const cart = body.cart;
-        for(const ticketId in cart){
-            const ticketPrice = await ticketService.getTicketPrice(eventId, ticketId);
+        for (const ticketId in cart) {
+            const ticketPrice = await ticketService.getTicketPrice(
+                eventId,
+                ticketId
+            );
             console.log('ticketPrice: ' + ticketPrice);
             price += ticketPrice * cart[ticketId];
 
             let item = {
-                'eventId': new ObjectId(eventId),
-                'ticketId': new ObjectId(ticketId),
-                'price': ticketPrice,
-                'quanity': cart[ticketId]
+                eventId: new ObjectId(eventId),
+                ticketId: new ObjectId(ticketId),
+                price: ticketPrice,
+                quanity: cart[ticketId],
             };
             items.push(item);
-        };
+        }
 
         // TODO In caso di coupon, aggiorno price totale
 
@@ -37,12 +40,13 @@ async function createPayment(req, res) {
         purchaseData = {
             userId: userInfo.id,
             items: items,
-            price: price
+            price: price,
         };
         const newPurchase = await paymentService.addPurchase(purchaseData);
         const purchaseId = newPurchase._id;
 
-        const { jsonResponse, httpStatusCode } = await paymentService.createOrder(price);
+        const { jsonResponse, httpStatusCode } =
+            await paymentService.createOrder(price);
         //console.log(jsonResponse);
         const payPalId = jsonResponse.id;
 
@@ -51,7 +55,7 @@ async function createPayment(req, res) {
         console.log('Purchase ID: ' + purchaseId);
         await paymentService.updatePurchasePayPalId(purchaseId, payPalId);
 
-        res.status(httpStatusCode).json(jsonResponse);  
+        res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
         console.error('Failed to create order:', error);
         res.status(500).json({ error: 'Failed to create order.' });
@@ -61,13 +65,14 @@ async function createPayment(req, res) {
 async function capturePayment(req, res) {
     const orderID = req.params['orderId'];
     try {
-        const { jsonResponse, httpStatusCode } = await paymentService.captureOrder(orderID);
+        const { jsonResponse, httpStatusCode } =
+            await paymentService.captureOrder(orderID);
 
         // TODO Gestire caso in cui venga effettuata la chiamata da Postman (https://prnt.sc/UTdsOXRuvSfp)
 
         // Aggiorno state nel DB
         console.log('Completato, aggiorno DB');
-        await  paymentService.updatePurchaseState(orderID, 'completed');
+        await paymentService.updatePurchaseState(orderID, 'completed');
 
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
