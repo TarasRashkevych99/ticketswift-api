@@ -1,6 +1,6 @@
 const express = require('express');
 const geolib = require('geolib');
-const { getDbEvents, getDbEvent } = require('../../services/database.service');
+const { getDbEvents } = require('../../services/events.service');
 const ticketmaster = require('../../services/ticketmaster.service');
 const validationService = require('../../services/validation.service');
 

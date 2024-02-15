@@ -1,5 +1,5 @@
 const express = require('express');
-const { getDbLocations } = require('../../services/database.service');
+const { getDbLocations } = require('../../services/locations.service');
 const validationService = require('../../services/validation.service');
 
 async function getLocations(req, res) {
