@@ -2,6 +2,7 @@ const express = require('express');
 const paymentService = require('../../services/payments.service');
 const tokensService = require('../../services/tokens.service');
 const ticketService = require('../../services/tickets.service');
+const couponService = require('../../services/coupons.service');
 const { ObjectId } = require('mongodb');
 
 async function createPayment(req, res) {
@@ -16,9 +17,10 @@ async function createPayment(req, res) {
             eventId = new ObjectId(eventId);
         }
 
-        // TODO Check del coupon
+        // Recupero il coupon
+        const coupon = req.session.user.coupon;
 
-        let price = 1; // TODO Reimpostare a 0
+        let price = 0;
         let items = [];
         const cart = body.cart;
         for (let ticketId in cart) {
@@ -43,7 +45,20 @@ async function createPayment(req, res) {
         }
 
 
-        // TODO In caso di coupon, aggiorno price totale
+        // In caso di coupon, aggiorno price totale
+        if(coupon){
+            console.log(coupon);
+            if(coupon.percent){
+                price = price - (price * coupon.amount/100);
+            }
+            else{
+                price = price - coupon.amount;
+            }
+
+            price = (price <= 0) ? 0 : price;           // Non può essere negativo
+        }
+
+        price = price + 1;                              // Aggiungo 1 euro simbolico di commissioni
 
         // Aggiungo purchase nel DB
         purchaseData = {
@@ -73,8 +88,10 @@ async function createPayment(req, res) {
 
 // TODO Controllare l'aggiornamento degli stati failed e canceled
 async function capturePayment(req, res) {
-    console.log('CIAO');
     const orderID = req.params['orderId'];
+    // Recupero il coupon
+    const coupon = req.session.user.coupon;
+
     try {
         const { jsonResponse, httpStatusCode } = await paymentService.captureOrder(orderID);
 
@@ -88,6 +105,19 @@ async function capturePayment(req, res) {
         
         console.log('Completato, aggiorno DB');
         await paymentService.updatePurchaseState(orderID, 'completed');
+
+        // In caso di coupon, lo rendo non più utilizzabile
+        if(coupon){
+            console.log(coupon);
+            couponService.setCouponAsUsedByCode(coupon.code);
+        }
+
+        // Creazione condizionale di un nuovo coupon
+        const newCoupon = await couponService.createNewCoupon(res.locals.id);
+        if(newCoupon){
+            console.log('Creato un nuovo coupon');
+            jsonResponse.newCoupon = newCoupon;
+        }
         
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {

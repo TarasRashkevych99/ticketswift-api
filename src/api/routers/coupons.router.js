@@ -10,7 +10,7 @@ async function applyCoupon(req, res) {
 
     const userCoupon = req.body;
 
-    const coupon = await couponsService.getCouponbyCode(userCoupon.code);
+    const coupon = await couponsService.getCouponByCode(userCoupon.code);
 
     if (!coupon) {
         return res.status(400).send('Invalid coupon code');
@@ -24,10 +24,15 @@ async function applyCoupon(req, res) {
 
     console.log(availableCodes);
     if (!availableCodes.includes(userCoupon.code)) {
-        return res.status(400).send('Coupon already used');
+        return res.status(400).send('Coupon already used or not valid for this account');
     }
 
-    req.session.user.coupon = userCoupon.code;
+    req.session.user.coupon = {
+        code: coupon.code,
+        amount: coupon.amount,
+        percent: coupon.percent
+    };
+
 
     res.status(200).send({ isCouponApplied: true });
 }

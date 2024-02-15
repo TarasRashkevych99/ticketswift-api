@@ -50,6 +50,14 @@ async function getPurchaseById(purchaseId) {
         .findOne({ _id: new ObjectId(purchaseId) });
 }
 
+async function getPurchaseCountByUserId(userId) {
+
+    return await context
+        .getCollection('purchases')
+        .countDocuments({ userId: new ObjectId(userId) });
+
+}
+
 async function getPurchaseByPayPalId(payPalId) {
     return await context
         .getCollection('purchases')
@@ -188,13 +196,11 @@ const captureOrder = async (orderID) => {
 async function handleResponse(response) {
     try {
         const jsonResponse = await response.json();
-        console.log('HANDLERSPONSE OK');
         return {
             jsonResponse,
             httpStatusCode: response.status,
         };
     } catch (err) {
-        console.log('HANDLERSPONSE ERROR');
         const errorMessage = await response.text();
         throw new Error(errorMessage);
     }
@@ -206,4 +212,5 @@ module.exports = {
     addPurchase,
     updatePurchaseState,
     updatePurchasePayPalId,
+    getPurchaseCountByUserId
 };
