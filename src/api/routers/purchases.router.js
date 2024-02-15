@@ -7,32 +7,41 @@ const { ObjectId } = require('mongodb');
 async function createPayment(req, res) {
     try {
         const body = req.body;
+        const userInfo = res.locals;
 
-        const token = req.cookies['token'];
-        const userInfo = tokensService.verifyToken(token);
-        const eventId = body.event_id;
+        const objectIdPattern = /^[0-9a-fA-F]{24}$/;
+        let eventId = body.event_id;
+        
+        if(objectIdPattern.test(eventId)){  // Controllo che l'eventId sia del formato ObjectId --> Nostro evento
+            eventId = new ObjectId(eventId);
+        }
 
         // TODO Check del coupon
 
         let price = 1; // TODO Reimpostare a 0
         let items = [];
         const cart = body.cart;
-        for (const ticketId in cart) {
+        for (let ticketId in cart) {
+
+            if(objectIdPattern.test(ticketId)){     // Controllo che il ticketId sia del formato ObjectId --> Nostro evento
+                ticketId = new ObjectId(ticketId);
+            }
+
             const ticketPrice = await ticketService.getTicketPrice(
                 eventId,
                 ticketId
             );
-            console.log('ticketPrice: ' + ticketPrice);
-            price += ticketPrice * cart[ticketId];
+            price += ticketPrice * cart[ticketId];          
 
             let item = {
-                eventId: new ObjectId(eventId),
-                ticketId: new ObjectId(ticketId),
+                eventId: eventId,
+                ticketId: ticketId,
                 price: ticketPrice,
                 quanity: cart[ticketId],
             };
             items.push(item);
         }
+
 
         // TODO In caso di coupon, aggiorno price totale
 
@@ -62,24 +71,31 @@ async function createPayment(req, res) {
     }
 }
 
+// TODO Controllare l'aggiornamento degli stati failed e canceled
 async function capturePayment(req, res) {
+    console.log('CIAO');
     const orderID = req.params['orderId'];
     try {
-        const { jsonResponse, httpStatusCode } =
-            await paymentService.captureOrder(orderID);
+        const { jsonResponse, httpStatusCode } = await paymentService.captureOrder(orderID);
 
-        // TODO Gestire caso in cui venga effettuata la chiamata da Postman (https://prnt.sc/UTdsOXRuvSfp)
-
-        // Aggiorno state nel DB
+        console.log(httpStatusCode);
+        if(!(httpStatusCode !== 200 || httpStatusCode !== 201)){
+            console.log('Fallito, aggiorno DB');
+            await paymentService.updatePurchaseState(orderID, 'failed');
+            res.status(httpStatusCode).json(jsonResponse);
+            return;
+        }
+        
         console.log('Completato, aggiorno DB');
         await paymentService.updatePurchaseState(orderID, 'completed');
-
+        
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
         console.error('Failed to capture order:', error);
         await paymentService.updatePurchaseState(orderID, 'canceled');
         res.status(500).json({ error: 'Failed to capture order.' });
     }
+  
 }
 
 module.exports = function () {

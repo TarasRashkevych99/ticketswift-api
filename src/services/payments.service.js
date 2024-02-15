@@ -188,11 +188,13 @@ const captureOrder = async (orderID) => {
 async function handleResponse(response) {
     try {
         const jsonResponse = await response.json();
+        console.log('HANDLERSPONSE OK');
         return {
             jsonResponse,
             httpStatusCode: response.status,
         };
     } catch (err) {
+        console.log('HANDLERSPONSE ERROR');
         const errorMessage = await response.text();
         throw new Error(errorMessage);
     }
