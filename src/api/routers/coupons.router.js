@@ -2,6 +2,7 @@ const express = require('express');
 const usersService = require('../../services/users.service');
 const tokenService = require('../../services/tokens.service');
 const couponsService = require('../../services/coupons.service');
+const validationService = require('../../services/validation.service');
 
 async function applyCoupon(req, res) {
     if (req.session.user.coupon) {
@@ -9,6 +10,9 @@ async function applyCoupon(req, res) {
     }
 
     const userCoupon = req.body;
+    //Zod input validation
+    let validation = validationService.couponSchema.safeParse(userCoupon);
+    if (!validation.success) return res.status(400).send(validation.error);
 
     const coupon = await couponsService.getCouponByCode(userCoupon.code);
 

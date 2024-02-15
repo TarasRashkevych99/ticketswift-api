@@ -1,8 +1,12 @@
 const express = require('express');
 const usersService = require('../../services/users.service');
 const tokenService = require('../../services/tokens.service');
+const validationService = require('../../services/validation.service');
 
 async function login(req, res) {
+    //Zod input validation
+    let validation = validationService.signupSchema.safeParse(req.body);
+    //if (!validation.success) return res.status(400).send(validation.error);
     const userInfo = await usersService.getAuthenticatedUser(req.body);
 
     if (!userInfo) {
@@ -18,6 +22,9 @@ async function login(req, res) {
 }
 
 async function signup(req, res) {
+    //Zod input validation
+    let validation = validationService.signupSchema.safeParse(req.body);
+    //if (!validation.success) return res.status(400).send(validation.error);
     try {
         const userInfo = await usersService.createUser(req.body);
 

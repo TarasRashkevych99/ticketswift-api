@@ -3,11 +3,15 @@ const paymentService = require('../../services/payments.service');
 const tokensService = require('../../services/tokens.service');
 const ticketService = require('../../services/tickets.service');
 const couponService = require('../../services/coupons.service');
+const validationService = require('../../services/validation.service');
 const { ObjectId } = require('mongodb');
 
 async function createPayment(req, res) {
     try {
         const body = req.body;
+        //Zod input validation
+        let validation = validationService.purchaseSchema.safeParse(body);
+        if (!validation.success) return res.status(400).send(validation.error);
         const userInfo = res.locals;
 
         const objectIdPattern = /^[0-9a-fA-F]{24}$/;
@@ -89,6 +93,10 @@ async function createPayment(req, res) {
 // TODO Controllare l'aggiornamento degli stati failed e canceled
 async function capturePayment(req, res) {
     const orderID = req.params['orderId'];
+    //Zod input validation
+    let validation = validationService.idSchema.safeParse(orderID);
+    if (!validation.success) return res.status(400).send(validation.error); 
+
     // Recupero il coupon
     const coupon = req.session.user.coupon;
 
