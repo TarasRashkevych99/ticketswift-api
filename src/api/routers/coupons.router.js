@@ -1,6 +1,4 @@
 const express = require('express');
-const usersService = require('../../services/users.service');
-const tokenService = require('../../services/tokens.service');
 const couponsService = require('../../services/coupons.service');
 const validationService = require('../../services/validation.service');
 
@@ -10,9 +8,13 @@ async function applyCoupon(req, res) {
     }
 
     const userCoupon = req.body;
+
     //Zod input validation
     let validation = validationService.couponSchema.safeParse(userCoupon);
-    if (!validation.success) return res.status(400).send(validation.error);
+
+    if (!validation.success) {
+        return res.status(400).send(validation.error);
+    }
 
     const coupon = await couponsService.getCouponByCode(userCoupon.code);
 
@@ -28,15 +30,16 @@ async function applyCoupon(req, res) {
 
     console.log(availableCodes);
     if (!availableCodes.includes(userCoupon.code)) {
-        return res.status(400).send('Coupon already used or not valid for this account');
+        return res
+            .status(400)
+            .send('Coupon already used or not valid for this account');
     }
 
     req.session.user.coupon = {
         code: coupon.code,
         amount: coupon.amount,
-        percent: coupon.percent
+        percent: coupon.percent,
     };
-
 
     res.status(200).send({ isCouponApplied: true });
 }

@@ -33,7 +33,7 @@ const idSchema = z.string(); //.regex(new RegExp(/^[a-zA-Z0-9]+$/));
 
 const signupSchema = z.object({
     email: z.coerce.string().email(),
-    password: z.coerce.string()
+    password: z.coerce.string(),
 });
 
 const purchaseSchema = z.object({
@@ -42,7 +42,13 @@ const purchaseSchema = z.object({
 });
 
 const couponSchema = z.object({
-    code: z.coerce.string()
+    code: z.coerce.string(),
 });
 
-module.exports = { paramsSchema, idSchema, signupSchema, purchaseSchema, couponSchema };
+module.exports = {
+    paramsSchema,
+    idSchema,
+    signupSchema,
+    purchaseSchema,
+    couponSchema,
+};

@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { ObjectId } = require('mongodb');
 const context = require('./context.service');
 
@@ -11,5 +10,5 @@ async function getDbLocations(quary = {}) {
 }
 
 module.exports = {
-    getDbLocations
+    getDbLocations,
 };

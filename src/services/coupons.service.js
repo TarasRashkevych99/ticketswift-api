@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const paymentService = require('./payments.service');
 const context = require('./context.service');
 const { ObjectId } = require('mongodb');
@@ -16,7 +15,7 @@ async function getUserValidCouponsById(userId) {
 }
 
 async function setCouponAsUsedByCode(code) {
-    const filter = {code: code};
+    const filter = { code: code };
     const updateCoupon = {
         $set: {
             valid: false,
@@ -41,7 +40,6 @@ async function getCouponById(couponId) {
 }
 
 async function addCoupon(couponData) {
-    
     const insertedId = (
         await context.getCollection('coupons').insertOne(couponData)
     ).insertedId;
@@ -56,33 +54,35 @@ async function addCoupon(couponData) {
     return coupon;
 }
 
-async function createNewCoupon(userId){
-
+async function createNewCoupon(userId) {
     // Recupero il numero di acquisti effettuati dall'utente userId, se sono un multiplo di 3, creo un nuovo coupon nel DB
 
     const counter = await paymentService.getPurchaseCountByUserId(userId);
-    console.log('Complessivamente ' + userId + ' ha effettuato ' + counter + ' acquisti');
+    console.log(
+        'Complessivamente ' + userId + ' ha effettuato ' + counter + ' acquisti'
+    );
 
-    if(counter % 3 === 0){
-        const randomCode = Array.from(Array(12), () => Math.floor(Math.random() * 36).toString(36)).join('');
+    if (counter % 3 === 0) {
+        const randomCode = Array.from(Array(12), () =>
+            Math.floor(Math.random() * 36).toString(36)
+        ).join('');
         const newCoupon = {
             userId: new ObjectId(userId),
-            amount: 2.5 + 0.5 * Math.round(Math.random()*15),
+            amount: 2.5 + 0.5 * Math.round(Math.random() * 15),
             percent: true,
             valid: true,
-            code: randomCode.toUpperCase()
+            code: randomCode.toUpperCase(),
         };
 
         return addCoupon(newCoupon);
     }
-    
-    return;
 
+    return;
 }
 
 module.exports = {
     getCouponByCode,
     getUserValidCouponsById,
     setCouponAsUsedByCode,
-    createNewCoupon
+    createNewCoupon,
 };

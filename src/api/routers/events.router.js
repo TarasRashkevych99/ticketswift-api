@@ -1,7 +1,7 @@
 const express = require('express');
 const geolib = require('geolib');
-const { getDbEvents } = require('../../services/events.service');
-const ticketmaster = require('../../services/ticketmaster.service');
+const eventsService = require('../../services/events.service');
+const ticketmasterService = require('../../services/ticketmaster.service');
 const validationService = require('../../services/validation.service');
 
 async function getEvents(req, res) {
@@ -17,7 +17,7 @@ async function getEvents(req, res) {
             let allEvents = [];
 
             return Promise.allSettled([
-                ticketmaster.getEvents(req.query),
+                ticketmasterService.getEvents(req.query),
                 getLocalEvents(req, res),
             ])
                 .then((results) =>
@@ -59,7 +59,7 @@ async function getLocalEvents(req, res) {
     };
     console.log(query);
     // try {
-    let result = await getDbEvents(query);
+    let result = await eventsService.getDbEvents(query);
 
     if (lat && lon) {
         //filter by position
@@ -88,8 +88,8 @@ async function getEventById(req, res) {
 
     try {
         const result = await Promise.any([
-            ticketmaster.getEvents({ id: eventId, locale: '*' }),
-            getDbEvents({ _id: eventId }),
+            ticketmasterService.getEvents({ id: eventId, locale: '*' }),
+            eventsService.getDbEvents({ _id: eventId }),
         ]);
         res.status(200).json(result);
     } catch (error) {
@@ -105,7 +105,7 @@ async function getTickets(req, res) {
     const eventId = req.params.eventId;
 
     try {
-        const result = await getDbEvents({ _id: eventId });
+        const result = await eventsService.getDbEvents({ _id: eventId });
         let first = result[0];
         res.status(200).json(first['tickets']);
     } catch (error) {

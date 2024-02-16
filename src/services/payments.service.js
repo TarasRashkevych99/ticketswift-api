@@ -1,5 +1,4 @@
 const { ObjectId } = require('mongodb');
-const axios = require('axios');
 const fetch = (...args) =>
     import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
@@ -51,11 +50,9 @@ async function getPurchaseById(purchaseId) {
 }
 
 async function getPurchaseCountByUserId(userId) {
-
     return await context
         .getCollection('purchases')
         .countDocuments({ userId: new ObjectId(userId) });
-
 }
 
 async function getPurchaseByPayPalId(payPalId) {
@@ -212,5 +209,5 @@ module.exports = {
     addPurchase,
     updatePurchaseState,
     updatePurchasePayPalId,
-    getPurchaseCountByUserId
+    getPurchaseCountByUserId,
 };

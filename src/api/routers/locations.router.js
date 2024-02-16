@@ -1,10 +1,10 @@
 const express = require('express');
-const { getDbLocations } = require('../../services/locations.service');
+const locationsService = require('../../services/locations.service');
 const validationService = require('../../services/validation.service');
 
 async function getLocations(req, res) {
     try {
-        res.status(200).json(await getDbLocations());
+        res.status(200).json(await locationsService.getDbLocations());
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Internal Server Error');
@@ -21,7 +21,9 @@ async function getLocationsById(req, res) {
     const locationId = req.params.locationId;
 
     try {
-        res.status(200).json(await getDbLocations({ _id: locationId }));
+        res.status(200).json(
+            await locationsService.getDbLocations({ _id: locationId })
+        );
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Internal Server Error');
