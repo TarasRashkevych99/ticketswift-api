@@ -74,11 +74,9 @@ async function updatePurchaseState(payPalId, newState) {
         .getCollection('purchases')
         .updateOne(filter, updatePurchase);
 
-    if (result.modifiedCount <= 0) {
+    if (result.modifiedCount !== 1) {
         throw new Error('Could not update Purchase state');
     }
-
-    return;
 }
 
 async function updatePurchasePayPalId(purchaseId, payPalId) {
@@ -94,11 +92,9 @@ async function updatePurchasePayPalId(purchaseId, payPalId) {
         .getCollection('purchases')
         .updateOne(filter, updatePurchase);
 
-    if (result.modifiedCount <= 0) {
+    if (result.modifiedCount !== 1) {
         throw new Error('Could not update Purchase');
     }
-
-    return;
 }
 
 /**

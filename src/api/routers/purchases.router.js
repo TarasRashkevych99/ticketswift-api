@@ -163,7 +163,7 @@ async function capturePayment(req, res) {
 async function cancelPayment(req, res) {
     try {
         const userId = res.locals.id;
-        const purchase = paymentsService.getPaypalPurchaseByUserId(
+        const purchase = await paymentsService.getPaypalPurchaseByUserId(
             req.body.id,
             userId
         );
@@ -176,7 +176,7 @@ async function cancelPayment(req, res) {
             return;
         }
 
-        paymentsService.updatePurchaseState(
+        await paymentsService.updatePurchaseState(
             req.body.id,
             paymentsService.PaymentState.Canceled
         );
