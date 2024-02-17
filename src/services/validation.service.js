@@ -32,17 +32,17 @@ const paramsSchema = z
 const idSchema = z.string(); //.regex(new RegExp(/^[a-zA-Z0-9]+$/));
 
 const signupSchema = z.object({
-    email: z.coerce.string().email(),
-    password: z.coerce.string(),
+    email: z.string().email(),
+    password: z.string().min(1),
 });
 
 const purchaseSchema = z.object({
-    cart: z.record(z.coerce.number()),
-    event_id: z.coerce.string(),
+    cart: z.record(z.string(), z.coerce.number()),
+    event_id: z.string(),
 });
 
 const couponSchema = z.object({
-    code: z.coerce.string(),
+    code: z.string(),
 });
 
 module.exports = {
