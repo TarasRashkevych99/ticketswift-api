@@ -38,7 +38,7 @@ async function applyCoupon(req, res) {
     req.session.user.coupon = {
         code: coupon.code,
         amount: coupon.amount,
-        percent: coupon.percent,
+        isPercentage: coupon.isPercentage,
     };
 
     res.status(200).send({ isCouponApplied: true });

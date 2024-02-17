@@ -52,7 +52,10 @@ async function getPurchaseById(purchaseId) {
 async function countPurchasesByUserId(userId) {
     return await context
         .getCollection('purchases')
-        .countDocuments({ userId: new ObjectId(userId) });
+        .countDocuments({
+            userId: new ObjectId(userId),
+            state: PaymentState.Completed,
+        });
 }
 
 async function getPaypalPurchaseByUserId(payPalId, userId) {

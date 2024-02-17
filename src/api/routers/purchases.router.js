@@ -51,9 +51,9 @@ async function createPayment(req, res) {
 
         // In caso di coupon, aggiorno price totale
         if (coupon) {
-            console.log(coupon);
             if (coupon.isPercentage) {
                 price = price - (price * coupon.amount) / 100;
+                console.log(price);
             } else {
                 price = price - coupon.amount;
             }
@@ -89,7 +89,6 @@ async function createPayment(req, res) {
     }
 }
 
-// TODO Controllare l'aggiornamento degli stati failed e canceled
 async function capturePayment(req, res) {
     const paypalId = req.params['orderId'];
     //Zod input validation
@@ -111,6 +110,9 @@ async function capturePayment(req, res) {
 
         console.log(userId);
         if (!purchase) {
+            if (req.session.user.coupon) {
+                delete req.session.user.coupon;
+            }
             res.status(401).json({
                 // eslint-disable-next-line quotes
                 error: "Can not update other users' order.",
@@ -120,12 +122,16 @@ async function capturePayment(req, res) {
 
         console.log('Status code: ' + httpStatusCode);
         console.log('PaypalId: ' + paypalId);
+
         if (Number(httpStatusCode) !== 201) {
             console.log('Fallito, aggiorno DB');
             await paymentsService.updatePurchaseState(
                 paypalId,
                 paymentsService.PaymentState.Failed
             );
+            if (req.session.user.coupon) {
+                delete req.session.user.coupon;
+            }
             res.status(httpStatusCode).json(jsonResponse);
             return;
         }
@@ -149,6 +155,9 @@ async function capturePayment(req, res) {
             jsonResponse.newCoupon = newCoupon;
         }
 
+        if (req.session.user.coupon) {
+            delete req.session.user.coupon;
+        }
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
         console.error('Failed to capture order:', error);
@@ -156,6 +165,9 @@ async function capturePayment(req, res) {
             paypalId,
             paymentsService.PaymentState.Failed
         );
+        if (req.session.user.coupon) {
+            delete req.session.user.coupon;
+        }
         res.status(500).json({ error: 'Failed to capture order.' });
     }
 }
@@ -169,6 +181,9 @@ async function cancelPayment(req, res) {
         );
 
         if (!purchase) {
+            if (req.session.user.coupon) {
+                delete req.session.user.coupon;
+            }
             res.status(401).json({
                 // eslint-disable-next-line quotes
                 error: "Can not update other users' order.",
@@ -181,8 +196,14 @@ async function cancelPayment(req, res) {
             paymentsService.PaymentState.Canceled
         );
 
+        if (req.session.user.coupon) {
+            delete req.session.user.coupon;
+        }
         res.status(200).json({ msg: 'Purchase updated successfully' });
     } catch (error) {
+        if (req.session.user.coupon) {
+            delete req.session.user.coupon;
+        }
         res.status(400).json({ error: 'Failed to cancel order.' });
     }
 }
