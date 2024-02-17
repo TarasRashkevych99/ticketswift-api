@@ -57,7 +57,7 @@ async function addCoupon(couponData) {
 async function createNewCoupon(userId) {
     // Recupero il numero di acquisti effettuati dall'utente userId, se sono un multiplo di 3, creo un nuovo coupon nel DB
 
-    const counter = await paymentService.getPurchaseCountByUserId(userId);
+    const counter = await paymentService.countPurchasesByUserId(userId);
     console.log(
         'Complessivamente ' + userId + ' ha effettuato ' + counter + ' acquisti'
     );
@@ -69,7 +69,7 @@ async function createNewCoupon(userId) {
         const newCoupon = {
             userId: new ObjectId(userId),
             amount: 2.5 + 0.5 * Math.round(Math.random() * 15),
-            percent: true,
+            isPercentage: true,
             valid: true,
             code: randomCode.toUpperCase(),
         };

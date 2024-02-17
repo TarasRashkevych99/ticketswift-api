@@ -8,10 +8,10 @@ const paypalBaseURL = 'https://api-m.sandbox.paypal.com';
 
 const context = require('./context.service');
 
-const PaymentsState = Object.freeze({
+const PaymentState = Object.freeze({
     Pending: 0,
     Failed: 1,
-    Success: 2,
+    Completed: 2,
     Canceled: 3,
 });
 
@@ -21,7 +21,7 @@ async function addPurchase(purchaseData) {
         userId: new ObjectId(purchaseData.userId),
         items: purchaseData.items,
         price: purchaseData.price,
-        state: 'pending',
+        state: PaymentState.Pending,
         createdOn: new Date(),
         modifiedOn: new Date(),
     };
@@ -49,25 +49,24 @@ async function getPurchaseById(purchaseId) {
         .findOne({ _id: new ObjectId(purchaseId) });
 }
 
-async function getPurchaseCountByUserId(userId) {
+async function countPurchasesByUserId(userId) {
     return await context
         .getCollection('purchases')
         .countDocuments({ userId: new ObjectId(userId) });
 }
 
-async function getPurchaseByPayPalId(payPalId) {
+async function getPaypalPurchaseByUserId(payPalId, userId) {
     return await context
         .getCollection('purchases')
-        .findOne({ payPalId: payPalId });
+        .findOne({ payPalId: payPalId, userId: new ObjectId(userId) });
 }
 
 async function updatePurchaseState(payPalId, newState) {
-    const purchase = await getPurchaseByPayPalId(payPalId);
-
-    const filter = { payPalId: String(payPalId) };
+    const filter = { payPalId: String(payPalId), state: PaymentState.Pending };
     const updatePurchase = {
         $set: {
             state: newState,
+            modifiedOn: new Date(),
         },
     };
 
@@ -87,6 +86,7 @@ async function updatePurchasePayPalId(purchaseId, payPalId) {
     const updatePurchase = {
         $set: {
             payPalId: payPalId,
+            modifiedOn: new Date(),
         },
     };
 
@@ -209,5 +209,7 @@ module.exports = {
     addPurchase,
     updatePurchaseState,
     updatePurchasePayPalId,
-    getPurchaseCountByUserId,
+    countPurchasesByUserId,
+    getPaypalPurchaseByUserId,
+    PaymentState,
 };

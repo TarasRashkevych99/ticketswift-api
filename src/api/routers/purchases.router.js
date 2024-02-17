@@ -1,5 +1,5 @@
 const express = require('express');
-const paymentService = require('../../services/payments.service');
+const paymentsService = require('../../services/payments.service');
 const tokensService = require('../../services/tokens.service');
 const ticketService = require('../../services/tickets.service');
 const couponService = require('../../services/coupons.service');
@@ -52,7 +52,7 @@ async function createPayment(req, res) {
         // In caso di coupon, aggiorno price totale
         if (coupon) {
             console.log(coupon);
-            if (coupon.percent) {
+            if (coupon.isPercentage) {
                 price = price - (price * coupon.amount) / 100;
             } else {
                 price = price - coupon.amount;
@@ -64,23 +64,23 @@ async function createPayment(req, res) {
         price = price + 1; // Aggiungo 1 euro simbolico di commissioni
 
         // Aggiungo purchase nel DB
-        purchaseData = {
+        const purchaseData = {
             userId: userInfo.id,
             items: items,
             price: price,
         };
-        const newPurchase = await paymentService.addPurchase(purchaseData);
+        const newPurchase = await paymentsService.addPurchase(purchaseData);
         const purchaseId = newPurchase._id;
 
         const { jsonResponse, httpStatusCode } =
-            await paymentService.createOrder(price);
+            await paymentsService.createOrder(price);
         //console.log(jsonResponse);
         const payPalId = jsonResponse.id;
 
         // Aggiorno Paypal Id nel DB
         console.log('Paypal ID: ' + payPalId);
         console.log('Purchase ID: ' + purchaseId);
-        await paymentService.updatePurchasePayPalId(purchaseId, payPalId);
+        await paymentsService.updatePurchasePayPalId(purchaseId, payPalId);
 
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
@@ -91,9 +91,9 @@ async function createPayment(req, res) {
 
 // TODO Controllare l'aggiornamento degli stati failed e canceled
 async function capturePayment(req, res) {
-    const orderID = req.params['orderId'];
+    const paypalId = req.params['orderId'];
     //Zod input validation
-    let validation = validationService.idSchema.safeParse(orderID);
+    let validation = validationService.idSchema.safeParse(paypalId);
     if (!validation.success) return res.status(400).send(validation.error);
 
     // Recupero il coupon
@@ -101,18 +101,39 @@ async function capturePayment(req, res) {
 
     try {
         const { jsonResponse, httpStatusCode } =
-            await paymentService.captureOrder(orderID);
+            await paymentsService.captureOrder(paypalId);
 
-        console.log(httpStatusCode);
-        if (!(httpStatusCode !== 200 || httpStatusCode !== 201)) {
+        const userId = res.locals.id;
+        const purchase = await paymentsService.getPaypalPurchaseByUserId(
+            paypalId,
+            userId
+        );
+
+        console.log(userId);
+        if (!purchase) {
+            res.status(401).json({
+                error: "Can not update other users' order.",
+            });
+            return;
+        }
+
+        console.log('Status code: ' + httpStatusCode);
+        console.log('PaypalId: ' + paypalId);
+        if (Number(httpStatusCode) !== 201) {
             console.log('Fallito, aggiorno DB');
-            await paymentService.updatePurchaseState(orderID, 'failed');
+            await paymentsService.updatePurchaseState(
+                paypalId,
+                paymentsService.PaymentState.Failed
+            );
             res.status(httpStatusCode).json(jsonResponse);
             return;
         }
 
         console.log('Completato, aggiorno DB');
-        await paymentService.updatePurchaseState(orderID, 'completed');
+        await paymentsService.updatePurchaseState(
+            paypalId,
+            paymentsService.PaymentState.Completed
+        );
 
         // In caso di coupon, lo rendo non più utilizzabile
         if (coupon) {
@@ -130,8 +151,35 @@ async function capturePayment(req, res) {
         res.status(httpStatusCode).json(jsonResponse);
     } catch (error) {
         console.error('Failed to capture order:', error);
-        await paymentService.updatePurchaseState(orderID, 'canceled');
+        await paymentsService.updatePurchaseState(
+            paypalId,
+            paymentsService.PaymentState.Failed
+        );
         res.status(500).json({ error: 'Failed to capture order.' });
+    }
+}
+
+async function cancelPayment(req, res) {
+    try {
+        const userId = res.locals.id;
+        const purchase = paymentsService.getPaypalPurchaseByUserId(
+            req.body.id,
+            userId
+        );
+
+        if (!purchase) {
+            res.status(401).json({
+                error: "Can not update other users' order.",
+            });
+            return;
+        }
+
+        paymentsService.updatePurchaseState(
+            req.body.id,
+            paymentsService.PaymentState.Canceled
+        );
+    } catch (error) {
+        res.status(400).json({ error: 'Failed to cancel order.' });
     }
 }
 
@@ -140,6 +188,7 @@ module.exports = function () {
 
     router.post('/', createPayment);
     router.post('/:orderId/capture', capturePayment);
+    router.post('/cancel', cancelPayment);
 
     return router;
 };
