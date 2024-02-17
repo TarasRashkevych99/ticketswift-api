@@ -112,6 +112,7 @@ async function capturePayment(req, res) {
         console.log(userId);
         if (!purchase) {
             res.status(401).json({
+                // eslint-disable-next-line quotes
                 error: "Can not update other users' order.",
             });
             return;
@@ -169,6 +170,7 @@ async function cancelPayment(req, res) {
 
         if (!purchase) {
             res.status(401).json({
+                // eslint-disable-next-line quotes
                 error: "Can not update other users' order.",
             });
             return;
