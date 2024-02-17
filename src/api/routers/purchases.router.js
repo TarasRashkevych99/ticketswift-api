@@ -180,6 +180,8 @@ async function cancelPayment(req, res) {
             req.body.id,
             paymentsService.PaymentState.Canceled
         );
+
+        res.status(200).json({ msg: 'Purchase updated successfully' });
     } catch (error) {
         res.status(400).json({ error: 'Failed to cancel order.' });
     }
