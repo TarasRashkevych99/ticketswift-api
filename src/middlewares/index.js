@@ -4,7 +4,7 @@ const session = require('express-session');
 const cors = require('cors');
 
 const corsConfig = {
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || true,
     optionsSuccessStatus: 200,
     credentials: true,
 };
