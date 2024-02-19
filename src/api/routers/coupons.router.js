@@ -1,6 +1,7 @@
 const express = require('express');
 const couponsService = require('../../services/coupons.service');
 const validationService = require('../../services/validation.service');
+const { ObjectId } = require('mongodb');
 
 async function applyCoupon(req, res) {
     if (req.session.user.coupon) {
@@ -44,10 +45,28 @@ async function applyCoupon(req, res) {
     res.status(200).send({ isCouponApplied: true });
 }
 
+async function getCouponById(req, res) {
+    const userId = res.locals.id;
+    const couponId = req.params['couponId'];
+
+    const userCoupon = await couponsService.getValidCouponByIds(
+        couponId,
+        userId
+    );
+
+    if (userCoupon) {
+        res.status(200).send({ couponDetails: userCoupon });
+    } else {
+        res.status(404).send('Coupon not found');
+    }
+    return;
+}
+
 module.exports = function () {
     const router = express.Router();
 
     router.post('/apply', applyCoupon);
+    router.get('/:couponId', getCouponById);
 
     return router;
 };

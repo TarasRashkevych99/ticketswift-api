@@ -39,6 +39,16 @@ async function getCouponById(couponId) {
         .findOne({ _id: new ObjectId(couponId) });
 }
 
+async function getValidCouponByIds(couponId, userId) {
+    return await context
+        .getCollection('coupons')
+        .findOne({
+            _id: new ObjectId(couponId),
+            valid: true,
+            userId: new ObjectId(userId),
+        });
+}
+
 async function addCoupon(couponData) {
     const insertedId = (
         await context.getCollection('coupons').insertOne(couponData)
@@ -92,4 +102,5 @@ module.exports = {
     getUserValidCouponsById,
     setCouponAsUsedByCode,
     createNewCoupon,
+    getValidCouponByIds,
 };

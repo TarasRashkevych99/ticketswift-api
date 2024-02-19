@@ -149,10 +149,10 @@ async function capturePayment(req, res) {
         }
 
         // Creazione condizionale di un nuovo coupon
-        const couponId = await couponService.createNewCoupon(res.locals.id);
-        if (couponId) {
+        const newCoupon = await couponService.createNewCoupon(res.locals.id);
+        if (newCoupon) {
             console.log('Creato un nuovo coupon');
-            jsonResponse.couponId = couponId;
+            jsonResponse.newCoupon = newCoupon;
         }
 
         if (req.session.user.coupon) {
@@ -208,12 +208,32 @@ async function cancelPayment(req, res) {
     }
 }
 
+async function getPaymentByPayPalId(req, res) {
+    // Controllo che l'utente che effettua la richiesta sia quello associato al pagamento
+
+    const userId = res.locals.id;
+    const paypalId = req.params['orderId'];
+
+    const userPayments = await paymentsService.getPaypalPurchaseByUserId(
+        paypalId,
+        userId
+    );
+
+    if (userPayments) {
+        res.status(200).send({ purchaseDetails: userPayments });
+    } else {
+        res.status(404).send('Purchase not found');
+    }
+    return;
+}
+
 module.exports = function () {
     const router = express.Router();
 
     router.post('/', createPayment);
     router.post('/:orderId/capture', capturePayment);
     router.post('/cancel', cancelPayment);
+    router.get('/:orderId', getPaymentByPayPalId);
 
     return router;
 };
