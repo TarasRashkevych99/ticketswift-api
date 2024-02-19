@@ -19,7 +19,7 @@ async function addPurchase(purchaseData) {
     const newPurchase = {
         payPalId: null,
         userId: new ObjectId(purchaseData.userId),
-        items: purchaseData.items,
+        cart: purchaseData.items,
         price: purchaseData.price,
         state: PaymentState.Pending,
         createdOn: new Date(),
@@ -50,12 +50,10 @@ async function getPurchaseById(purchaseId) {
 }
 
 async function countPurchasesByUserId(userId) {
-    return await context
-        .getCollection('purchases')
-        .countDocuments({
-            userId: new ObjectId(userId),
-            state: PaymentState.Completed,
-        });
+    return await context.getCollection('purchases').countDocuments({
+        userId: new ObjectId(userId),
+        state: PaymentState.Completed,
+    });
 }
 
 async function getPaypalPurchaseByUserId(payPalId, userId) {

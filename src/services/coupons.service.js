@@ -74,10 +74,17 @@ async function createNewCoupon(userId) {
             code: randomCode.toUpperCase(),
         };
 
-        return addCoupon(newCoupon);
+        try {
+            const couponId = (
+                await context.getCollection('coupons').insertOne(newCoupon)
+            ).insertedId;
+            return couponId;
+        } catch (error) {
+            return null;
+        }
     }
 
-    return;
+    return null;
 }
 
 module.exports = {
