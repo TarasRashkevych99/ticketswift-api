@@ -9,8 +9,6 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/TarasRashkevych99/ticketswift-api.git .
 
-RUN git checkout features/payments
-
 RUN npm install
 
 RUN cd ./keys && /bin/bash ./generate_keys.sh
