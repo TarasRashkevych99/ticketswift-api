@@ -44,7 +44,7 @@ async function createPayment(req, res) {
                 eventId: eventId,
                 ticketId: ticketId,
                 price: ticketPrice,
-                quanity: cart[ticketId],
+                quantity: cart[ticketId],
             };
             items.push(item);
         }
@@ -149,10 +149,10 @@ async function capturePayment(req, res) {
         }
 
         // Creazione condizionale di un nuovo coupon
-        const newCoupon = await couponService.createNewCoupon(res.locals.id);
-        if (newCoupon) {
+        const couponId = await couponService.createNewCoupon(res.locals.id);
+        if (couponId) {
             console.log('Creato un nuovo coupon');
-            jsonResponse.newCoupon = newCoupon;
+            jsonResponse.couponId = couponId;
         }
 
         if (req.session.user.coupon) {
