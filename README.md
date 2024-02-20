@@ -2,37 +2,42 @@
 
 This repository provides a RESTful APIs for purchasing event tickets
 
-
-
 ## Environment Variables
 
 This project relies on several environment variables for configuration.
 
-| Variable            | Description                                           |
-|---------------------|-------------------------------------------------------|
-| CONNECTION_STRING   | Connection string for the database                    |
-| FORECAST_URL        | URL for Open Meteo API for weather forecast            |
-| FRONTEND_URL        | URL of the frontend application (optional)            |
-| PAYPAL_CLIENT_ID    | Client ID for PayPal integration                      |
-| PAYPAL_CLIENT_SECRET| Client secret for PayPal integration                  |
-| PORT                | Port number for the server                            |
-| SESSION_SECRET      | Secret key for session management                     |
-| TICKETMASTER_KEY    | API key for Ticketmaster integration                  |
-| TICKETMASTER_URL    | URL for Ticketmaster API                               |
-| TOKEN_EXPIRES_IN    | Token expiration duration in seconds                  |
+| Variable             | Description                                 |
+| -------------------- | ------------------------------------------- |
+| CONNECTION_STRING    | Connection string for the database          |
+| FORECAST_URL         | URL for Open Meteo API for weather forecast |
+| FRONTEND_URL         | URL of the frontend application (optional)  |
+| PAYPAL_CLIENT_ID     | Client ID for PayPal integration            |
+| PAYPAL_CLIENT_SECRET | Client secret for PayPal integration        |
+| PORT                 | Port number for the server                  |
+| SESSION_SECRET       | Secret key for session management           |
+| TICKETMASTER_KEY     | API key for Ticketmaster integration        |
+| TICKETMASTER_URL     | URL for Ticketmaster API                    |
+| TOKEN_EXPIRES_IN     | Token expiration duration in seconds        |
 
 ### Mongodb
-- `CONNECTION_STRING`: here you have to insert the connection string to the Mongodb database
+
+-   `CONNECTION_STRING`: here you have to insert the connection string to the Mongodb database
 
 ### Paypal
-- `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`: these are aviable after having created an account in the [Paypal Developer](https://developer.paypal.com/docs/api/payments/v1/) website
+
+-   `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`: these are aviable after having created an account in the [Paypal Developer](https://developer.paypal.com/docs/api/payments/v1/) website
 
 ### Ticketmaster
-- `TICKETMASTER_KEY`: you must sign up on the [Ticketmaster](https://developer-acct.ticketmaster.com/user/login) website as a developer and generate your own API Key
 
-Before running the application, make sure to set the required environment variables. You can do this by renaming the `.env.example` file in the root of your project, populating it with the necessary values and rename it as `.env`. 
+-   `TICKETMASTER_KEY`: you must sign up on the [Ticketmaster](https://developer-acct.ticketmaster.com/user/login) website as a developer and generate your own API Key
 
+### Frontend Url
 
+-   `FRONTEND_URL`: you should normally set this variable to the url of the
+    actual frontend to satisfy the cors policy, but to able to run using
+    docker it has been decided to allow access to all origins, so there is no need to specify this variable inside the `.env` file
+
+Before running the application, make sure to set the required environment variables. You can do this by renaming the `.env.example` file in the root of your project, populating it with the necessary values and rename it as `.env`.
 
 ## Deployment
 
