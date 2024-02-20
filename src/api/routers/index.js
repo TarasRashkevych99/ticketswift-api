@@ -6,6 +6,7 @@ const getEventsRouter = require('./events.router');
 const getLocationsRouter = require('./locations.router');
 const getArtistsRouter = require('./artists.router');
 const getPurchasesRouter = require('./purchases.router');
+const getCouponsRouter = require('./coupons.router');
 
 module.exports = () => {
     const router = express.Router();
@@ -16,6 +17,7 @@ module.exports = () => {
     router.use('/locations', getLocationsRouter());
     router.use('/artists', getArtistsRouter());
     router.use('/purchases', getPurchasesRouter());
+    router.use('/coupons', getCouponsRouter());
 
     return router;
 };

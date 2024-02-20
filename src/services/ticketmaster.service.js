@@ -1,7 +1,4 @@
-require('dotenv').config();
 const ngeohash = require('ngeohash');
-const axios = require('axios');
-const cheerio = require('cheerio');
 const { v4: uuidv4 } = require('uuid');
 
 KEY = process.env.TICKETMASTER_KEY;

@@ -31,4 +31,24 @@ const paramsSchema = z
 
 const idSchema = z.string(); //.regex(new RegExp(/^[a-zA-Z0-9]+$/));
 
-module.exports = { paramsSchema, idSchema };
+const signupSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(1),
+});
+
+const purchaseSchema = z.object({
+    cart: z.record(z.string(), z.coerce.number()),
+    event_id: z.string(),
+});
+
+const couponSchema = z.object({
+    code: z.string(),
+});
+
+module.exports = {
+    paramsSchema,
+    idSchema,
+    signupSchema,
+    purchaseSchema,
+    couponSchema,
+};

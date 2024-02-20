@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const weatherMap = {
     0: 'Clear sky',
     1: 'Mainly clear',
