@@ -1,6 +1,6 @@
 # ticketswift-api
 
-This repository provides a RESTful APIs for purchasing event tickets
+This repository provides RESTful APIs for purchasing event tickets
 
 ## Environment Variables
 
